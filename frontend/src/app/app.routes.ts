@@ -14,6 +14,8 @@ import {
   authGuard,
 } from './core/auth/auth.guard';
 
+import { DocumentsComponent } from './features/documents/documents.component';
+
 export const routes: Routes = [
   {
     path: 'login',
@@ -35,6 +37,11 @@ export const routes: Routes = [
         (m) => m.DashboardComponent,
       ),
   },
+  {
+  path: 'documents',
+  component: DocumentsComponent,
+  canActivate: [authGuard],
+},
 
   {
     path: '',

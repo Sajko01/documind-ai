@@ -38,6 +38,7 @@ export default new DataSource({
   ],
 
   migrations: [
-    'src/database/migrations/*{.ts,.js}',
-  ],
+  'src/database/migrations/*{.ts,.js}',
+  'src/migrations/*{.ts,.js}', // 👈 Dodata i ova putanja
+],
 });

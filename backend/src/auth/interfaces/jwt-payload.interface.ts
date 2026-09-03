@@ -6,3 +6,4 @@ export interface JwtPayload {
   organizationId: string;
   role: UserRole;
 }
+

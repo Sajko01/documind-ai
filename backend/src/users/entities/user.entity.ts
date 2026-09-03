@@ -9,9 +9,15 @@ import {
 
 import { Organization } from '../../organizations/entities/organization.entity';
 
+// export enum UserRole {
+//   ADMIN = 'ADMIN',
+//   MEMBER = 'MEMBER',
+// }
+
 export enum UserRole {
   ADMIN = 'ADMIN',
-  MEMBER = 'MEMBER',
+  EMPLOYEE = 'EMPLOYEE',
+  VIEWER = 'VIEWER',
 }
 
 import { Index } from 'typeorm';
@@ -42,7 +48,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.MEMBER,
+    default: UserRole.EMPLOYEE,
   })
   role!: UserRole;
 

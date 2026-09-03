@@ -47,7 +47,7 @@ export class UsersService {
   async create(
     dto: CreateUserDto,
     organizationId: string,
-    role: UserRole = UserRole.MEMBER,
+    role: UserRole = UserRole.EMPLOYEE,
   ): Promise<User> {
     const existingUser =
       await this.usersRepository.findOne({

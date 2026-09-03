@@ -1,6 +1,125 @@
+// import {
+//   Injectable,
+//   UnauthorizedException,
+// } from '@nestjs/common';
+
+// import {
+//   PassportStrategy,
+// } from '@nestjs/passport';
+
+// import {
+//   ExtractJwt,
+//   Strategy,
+// } from 'passport-jwt';
+
+// import { ConfigService } from '@nestjs/config';
+
+// import { AuthService } from '../auth.service';
+
+// import { JwtPayload } from '../interfaces/jwt-payload.interface';
+
+// @Injectable()
+// export class JwtStrategy
+//   extends PassportStrategy(Strategy)
+// {
+//   constructor(
+//     private readonly configService:
+//       ConfigService,
+
+//     private readonly authService:
+//       AuthService,
+//   ) {
+//     super({
+//       jwtFromRequest:
+//         ExtractJwt.fromAuthHeaderAsBearerToken(),
+
+//       ignoreExpiration: false,
+
+//       secretOrKey:
+//         configService.get<string>(
+//           'JWT_SECRET',
+//         ),
+//     });
+//   }
+
+//   async validate(payload: JwtPayload) {
+//     const user =
+//       await this.authService.validateUser(
+//         payload.sub,
+//       );
+
+//     if (!user) {
+//       throw new UnauthorizedException({
+//         success: false,
+//         error: {
+//           code: 'UNAUTHORIZED',
+//           message: 'Invalid authentication token',
+//         },
+//       });
+//     }
+
+//     return {
+//       id: user.id,
+//       email: user.email,
+//       name: user.name,
+//       role: user.role,
+//       organizationId:
+//         user.organizationId,
+//     };
+//   }
+// }
+
+// import {
+//   Injectable,
+//   UnauthorizedException,
+// } from '@nestjs/common';
+// import { ConfigService } from '@nestjs/config';
+// import { PassportStrategy } from '@nestjs/passport';
+// import {
+//   ExtractJwt,
+//   Strategy,
+// } from 'passport-jwt';
+// import { AuthService } from '../auth.service';
+// import { JwtPayload } from '../interfaces/jwt-payload.interface';
+
+// @Injectable()
+// export class JwtStrategy extends PassportStrategy(Strategy) {
+//   constructor(
+//     private readonly configService: ConfigService,
+//     private readonly authService: AuthService,
+//   ) {
+//     super({
+//       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+//       ignoreExpiration: false,
+//       secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
+//     });
+//   }
+
+//   async validate(payload: JwtPayload) {
+//     const user = await this.authService.validateUser(payload.sub);
+
+//     if (!user) {
+//       throw new UnauthorizedException({
+//         success: false,
+//         error: {
+//           code: 'UNAUTHORIZED',
+//           message: 'Invalid authentication token',
+//         },
+//       });
+//     }
+
+//     return {
+//       id: user.id,
+//       email: user.email,
+//       name: user.name,
+//       role: user.role,
+//       organizationId: user.organizationId,
+//     };
+//   }
+// }
+
 import {
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 
 import {
@@ -14,8 +133,6 @@ import {
 
 import { ConfigService } from '@nestjs/config';
 
-import { AuthService } from '../auth.service';
-
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 
 @Injectable()
@@ -23,11 +140,7 @@ export class JwtStrategy
   extends PassportStrategy(Strategy)
 {
   constructor(
-    private readonly configService:
-      ConfigService,
-
-    private readonly authService:
-      AuthService,
+    configService: ConfigService,
   ) {
     super({
       jwtFromRequest:
@@ -36,35 +149,21 @@ export class JwtStrategy
       ignoreExpiration: false,
 
       secretOrKey:
-        configService.get<string>(
+        configService.getOrThrow<string>(
           'JWT_SECRET',
         ),
     });
   }
 
-  async validate(payload: JwtPayload) {
-    const user =
-      await this.authService.validateUser(
-        payload.sub,
-      );
-
-    if (!user) {
-      throw new UnauthorizedException({
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Invalid authentication token',
-        },
-      });
-    }
-
+  async validate(
+    payload: JwtPayload,
+  ) {
     return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
+      userId: payload.sub,
+      email: payload.email,
       organizationId:
-        user.organizationId,
+        payload.organizationId,
+      role: payload.role,
     };
   }
 }

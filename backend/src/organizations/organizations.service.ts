@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -26,5 +26,64 @@ export class OrganizationsService {
     return this.organizationsRepository.findOne({
       where: { id },
     });
+  }
+
+  async findOne(id: string, userOrganizationId: string): Promise<Organization> {
+    // 🔒 Security Guard: Korisnik može dohvatiti samo svoju organizaciju
+    if (id !== userOrganizationId) {
+      throw new ForbiddenException({
+        success: false,
+        error: {
+          code: 'FORBIDDEN_RESOURCE',
+          message: 'You do not have permission to access this organization',
+        },
+      });
+    }
+
+    const organization = await this.organizationsRepository.findOne({
+      where: { id },
+    });
+
+    if (!organization) {
+      throw new NotFoundException({
+        success: false,
+        error: {
+          code: 'ORGANIZATION_NOT_FOUND',
+          message: 'Organization not found',
+        },
+      });
+    }
+
+    return organization;
+  }
+
+  async delete(id: string, userOrganizationId: string): Promise<{ success: boolean; message: string }> {
+    // 🔒 Security Guard: Admin može obrisati samo svoju organizaciju
+    if (id !== userOrganizationId) {
+      throw new ForbiddenException({
+        success: false,
+        error: {
+          code: 'FORBIDDEN_RESOURCE',
+          message: 'You can only delete your own organization',
+        },
+      });
+    }
+
+    const result = await this.organizationsRepository.delete(id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException({
+        success: false,
+        error: {
+          code: 'ORGANIZATION_NOT_FOUND',
+          message: 'Organization not found',
+        },
+      });
+    }
+
+    return {
+      success: true,
+      message: 'Organization successfully deleted',
+    };
   }
 }
