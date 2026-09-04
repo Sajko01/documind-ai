@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "type": "known",
+    "question": "Koliko košta CEM II?",
+    "context": "Dokument: cenovnik.pdf (Strana 12)\nSadržaj: CEM II/A-L 42.5N — 890 din/kg",
+    "expected_answer_contains": ["890"]
+  },
+  {
+    "id": 2,
+    "type": "paraphrase",
+    "question": "Koja je cena CEM II/A-L?",
+    "context": "Dokument: cenovnik.pdf (Strana 12)\nSadržaj: CEM II/A-L 42.5N — 890 din/kg",
+    "expected_answer_contains": ["890"]
+  },
+  {
+    "id": 3,
+    "type": "unknown",
+    "question": "Koliko košta Tesla automobil?",
+    "context": "Dokument: cenovnik.pdf (Strana 12)\nSadržaj: CEM II/A-L 42.5N — 890 din/kg",
+    "expected_answer_contains": ["nemam", "dovoljno", "informacija"]
+  },
+  {
+    "id": 4,
+    "type": "ambiguous",
+    "question": "Koliko košta cement?",
+    "context": "Dokument: cenovnik.pdf\nSadržaj: CEM II = 890 din/kg, CEM III = 920 din/kg.",
+    "expected_answer_contains": ["890", "920"]
+  },
+  {
+    "id": 5,
+    "type": "conflicting",
+    "question": "Koliko košta CEM II?",
+    "context": "Dokument 1: cenovnik_januar.pdf - CEM II košta 850 din/kg.\nDokument 2: cenovnik_februar.pdf - CEM II košta 890 din/kg.",
+    "expected_answer_contains": ["850", "890"]
+  }
+]

@@ -1,0 +1,28 @@
+from .product_tools import (
+    SEARCH_PRODUCTS_TOOL,
+    GET_PRODUCT_TOOL,
+    CALCULATE_OFFER_TOOL,
+)
+
+TOOLS = [
+    SEARCH_PRODUCTS_TOOL,
+    GET_PRODUCT_TOOL,
+    CALCULATE_OFFER_TOOL,
+]
+
+from .product_tools import (
+    SEARCH_PRODUCTS_TOOL,
+    GET_PRODUCT_TOOL,
+    CALCULATE_OFFER_TOOL,
+)
+
+from .offer_tools import (
+    CREATE_OFFER_TOOL,
+)
+
+TOOLS = [
+    SEARCH_PRODUCTS_TOOL,
+    GET_PRODUCT_TOOL,
+    CALCULATE_OFFER_TOOL,
+    CREATE_OFFER_TOOL,
+]

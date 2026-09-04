@@ -2,16 +2,19 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { Organization } from '../../organizations/entities/organization.entity';
 import { User } from '../../users/entities/user.entity';
+import { Message } from './message.entity';
 
-import { Index } from 'typeorm';
 @Index(['organizationId'])
+@Index(['userId'])
 @Entity('conversations')
 export class Conversation {
   @PrimaryGeneratedColumn('uuid')
@@ -48,12 +51,17 @@ export class Conversation {
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: true,
   })
-  title!: string | null;
+  title!: string;
 
   @CreateDateColumn({
     name: 'created_at',
   })
   createdAt!: Date;
+
+  @OneToMany(
+    () => Message,
+    (message) => message.conversation,
+  )
+  messages!: Message[];
 }

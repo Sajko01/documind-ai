@@ -1,0 +1,182 @@
+<div class="chat-layout">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="conversations">
+    <div class="sidebar-header">
+      <h2>Conversations</h2>
+      <button
+        type="button"
+        (click)="newConversation()"
+      >
+        + New
+      </button>
+    </div>
+
+    <div
+      *ngIf="loadingConversations"
+      class="sidebar-loading"
+    >
+      Loading...
+    </div>
+
+    <button
+      *ngFor="let conversation of conversations"
+      type="button"
+      class="conversation-item"
+      [class.active]="selectedConversationId === conversation.id"
+      (click)="selectConversation(conversation.id)"
+    >
+      <div class="conversation-title">
+        {{ conversation.title || 'Untitled Conversation' }}
+      </div>
+
+      <div class="conversation-date">
+        {{ conversation.createdAt | date }}
+      </div>
+    </button>
+  </aside>
+
+
+  <!-- CHAT MAIN AREA -->
+  <main class="chat">
+    <header class="chat-header">
+      <h1>DocuMind AI</h1>
+      <span *ngIf="selectedConversationId">
+        Conversation
+      </span>
+    </header>
+
+
+    <!-- MESSAGES -->
+    <section class="messages">
+
+      <!-- Empty state -->
+      <div
+        *ngIf="messages.length === 0"
+        class="empty-chat"
+      >
+        <h2>How can I help?</h2>
+        <p>
+          Ask a question about your company documents or product catalog.
+        </p>
+      </div>
+
+      <!-- Messages list -->
+      <div
+        *ngFor="let message of messages"
+        class="message"
+        [class.user]="message.role === 'user'"
+        [class.assistant]="message.role === 'assistant'"
+      >
+        <div class="message-role">
+          {{ message.role === 'user' ? 'You' : 'AI' }}
+        </div>
+
+        <div class="message-content">
+          {{ message.content }}
+        </div>
+
+        <!-- AI TOOLS USED (Prikazuje se samo za asistenta i samo ako su korišćeni alati) -->
+        <div
+          *ngIf="
+            message.role === 'assistant' &&
+            message.toolResults &&
+            message.toolResults.length > 0
+          "
+          class="tool-results"
+        >
+          <div class="tool-title">
+            AI tools used
+          </div>
+
+          <div
+            *ngFor="let tool of message.toolResults"
+            class="tool-badge"
+          >
+            <span class="check-icon">✓</span>
+
+            <span *ngIf="tool.tool === 'search_products'">Product search</span>
+            <span *ngIf="tool.tool === 'get_product'">Product lookup</span>
+            <span *ngIf="tool.tool === 'calculate_offer'">Offer calculation</span>
+            
+            <!-- Fallback za sve ostale alate -->
+            <span *ngIf="tool.tool !== 'search_products' && tool.tool !== 'get_product' && tool.tool !== 'calculate_offer'">
+              {{ tool.tool }}
+            </span>
+          </div>
+        </div>
+
+        <!-- SOURCES (Prikazuje se SAMO za asistenta i SAMO ako ima bar 1 izvor) -->
+        <div
+          *ngIf="
+            message.role === 'assistant' &&
+            message.sources &&
+            message.sources.length > 0
+          "
+          class="sources"
+        >
+          <div class="sources-title">
+            Sources
+          </div>
+
+          <button
+            *ngFor="let source of message.sources"
+            type="button"
+            class="source"
+            (click)="openDocument(source.documentId, source.page)"
+          >
+            <span class="source-icon">📄</span>
+
+            <span class="source-info">
+              <span class="source-document">
+                {{ source.document || 'Document' }}
+              </span>
+
+              <span class="source-page">
+                Page {{ source.page }}
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- LOADING / THINKING STATE -->
+      <div
+        *ngIf="isSendingMessage"
+        class="thinking"
+      >
+        AI is thinking...
+      </div>
+
+      <div
+        *ngIf="errorMessage"
+        class="error-message"
+      >
+        {{ errorMessage }}
+      </div>
+
+    </section>
+
+
+    <!-- INPUT FOOTER -->
+    <footer class="chat-input">
+      <textarea
+        [(ngModel)]="messageText"
+        placeholder="Ask something..."
+        rows="2"
+        [disabled]="isSendingMessage"
+        (keydown.enter)="$event.preventDefault(); sendMessage()"
+      ></textarea>
+
+      <button
+        type="button"
+        (click)="sendMessage()"
+        [disabled]="isSendingMessage || !messageText.trim()"
+      >
+        Send
+      </button>
+    </footer>
+
+  </main>
+
+</div>

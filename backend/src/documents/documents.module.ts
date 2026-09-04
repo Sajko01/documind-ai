@@ -4,6 +4,7 @@ import { DocumentsService } from './documents.service';
 import { DocumentChunk } from './entities/document-chunk.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Document } from './entities/document.entity';
+import { HttpModule } from '@nestjs/axios';
 
 
 
@@ -13,6 +14,7 @@ import { Document } from './entities/document.entity';
       Document,
       DocumentChunk,
     ]),
+     HttpModule,
   ],
   controllers: [DocumentsController],
   providers: [DocumentsService],

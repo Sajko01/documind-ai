@@ -13,6 +13,7 @@ import { Message } from 'src/chat/entities/message.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { Offer } from 'src/offers/entities/offer.entity';
 import { AnalyticsEvent } from 'src/analytics/entities/analytics-event.entity';
+import { OfferItem } from 'src/offers/entities/offer-item.entity';
 
 export default new DataSource({
   type: 'postgres',
@@ -34,6 +35,7 @@ export default new DataSource({
     Message,
     Product,
     Offer,
+    OfferItem,
     AnalyticsEvent,
   ],
 

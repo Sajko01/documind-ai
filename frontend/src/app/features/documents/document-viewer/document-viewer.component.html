@@ -1,0 +1,24 @@
+<div class="document-viewer">
+  <header>
+    <h1>Document Viewer</h1>
+    <p>Document ID: {{ documentId }}</p>
+    <p>Page: {{ page }}</p>
+  </header>
+
+  <div *ngIf="loading">
+    <p>Učitavanje dokumenta...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error">
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <div class="viewer-container" *ngIf="!loading && pdfUrl">
+    <iframe
+      [src]="pdfUrl"
+      width="100%"
+      height="750px"
+      frameborder="0"
+    ></iframe>
+  </div>
+</div>

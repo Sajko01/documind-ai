@@ -76,6 +76,7 @@ import { AnalyticsEvent } from './analytics/entities/analytics-event.entity';
 
 import { Organization } from './organizations/entities/organization.entity';
 import { User } from './users/entities/user.entity';
+import { OfferItem } from './offers/entities/offer-item.entity';
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { User } from './users/entities/user.entity';
           Message,
           Product,
           Offer,
+          OfferItem,
           AnalyticsEvent,
         ],
 

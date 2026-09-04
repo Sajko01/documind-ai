@@ -1,73 +1,4 @@
-// // import { NestFactory } from '@nestjs/core';
-// // import { AppModule } from './app.module';
 
-// // async function bootstrap() {
-// //   const app = await NestFactory.create(AppModule);
-// //   await app.listen(process.env.PORT ?? 3000);
-// // }
-// // bootstrap();
-
-
-// import { ValidationPipe } from '@nestjs/common';
-// import { NestFactory } from '@nestjs/core';
-// import { AppModule } from './app.module';
-// import { GlobalExceptionFilter } from './common/filter/global-exception.filter';
-// import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-// import {
-//   DocumentBuilder,
-//   SwaggerModule,
-// } from '@nestjs/swagger';
-
-
-
-
-// async function bootstrap() {
-//   const app = await NestFactory.create(AppModule);
-
-//   app.setGlobalPrefix('api');
-
-//   const config = new DocumentBuilder()
-//   .setTitle('DocuMind AI API')
-//   .setDescription(
-//     'REST API for the DocuMind AI document intelligence platform',
-//   )
-//   .setVersion('1.0')
-//   .addBearerAuth()
-//   .build();
-
-// const document = SwaggerModule.createDocument(
-//   app,
-//   config,
-// );
-
-// SwaggerModule.setup(
-//   'api/docs',
-//   app,
-//   document,
-// );
-
-  
-
-//   app.useGlobalFilters(
-//   new GlobalExceptionFilter(),
-// );
-
-//   app.useGlobalInterceptors(
-//   new LoggingInterceptor(),
-// );
-
-//   app.useGlobalPipes(
-//     new ValidationPipe({
-//       whitelist: true,
-//       forbidNonWhitelisted: true,
-//       transform: true,
-//     }),
-//   );
-
-//   await app.listen(process.env.PORT ?? 3000);
-// }
-
-// bootstrap();
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -101,7 +32,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   // Globalni filteri, presretači i pajpovi
-  app.useGlobalFilters(new GlobalExceptionFilter());
+ // app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({

@@ -1,0 +1,242 @@
+[
+  {
+    "id": 1,
+    "category": "Cena",
+    "question": "Koliko košta CEM II?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 2,
+    "category": "Cena",
+    "question": "Kolika je cena CEM III cementa sa PDV-om?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 3,
+    "category": "Cena",
+    "question": "Koja je cena belog cementa CEM I po džaku?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 4,
+    "category": "Cena",
+    "question": "Koliko staje tona CEM II u rinfuzu?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 5,
+    "category": "Cena",
+    "question": "Koliki se popust dobija na količinu od 10 tona?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  },
+  {
+    "id": 6,
+    "category": "Dostupnost",
+    "question": "Koji je standardni rok isporuke za gradske zone?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 7,
+    "category": "Dostupnost",
+    "question": "Koliko se čeka na dostavu na vanrednim i specijalnim lokacijama?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 8,
+    "category": "Dostupnost",
+    "question": "Kolika je minimalna količina narudžbine za džakiranu robu?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 9,
+    "category": "Dostupnost",
+    "question": "Koja je minimalna količina za naručivanje rinfuznog materijala?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 10,
+    "category": "Dostupnost",
+    "question": "Da li ima na stanju rinfuznog cementa na silosima?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  },
+  {
+    "id": 11,
+    "category": "Proizvodi",
+    "question": "Koje klase čvrstoće je Portland cement CEM II/A-S?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 12,
+    "category": "Proizvodi",
+    "question": "Za kakve konstrukcije je pogodan metalurški cement CEM III?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 13,
+    "category": "Proizvodi",
+    "question": "Koje je standardno pakovanje za džakirani cement?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 14,
+    "category": "Proizvodi",
+    "question": "Koji evropski i domaći standard ispunjavaju isporučena veziva?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  },
+  {
+    "id": 15,
+    "category": "Proizvodi",
+    "question": "Koliko džakova cementa se nalazi na jednoj paleti?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 16,
+    "category": "Uslovi / pravila",
+    "question": "Koji su uslovi za ostvarivanje besplatnog prevoza?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 17,
+    "category": "Uslovi / pravila",
+    "question": "Koji su prihvaćeni načini plaćanja robe?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  },
+  {
+    "id": 18,
+    "category": "Uslovi / pravila",
+    "question": "Koliko traje garancija na kvalitet skladištenog cementa?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  },
+  {
+    "id": 19,
+    "category": "Uslovi / pravila",
+    "question": "Ko snosi troškove povrata u slučaju isporuke robe sa fabričkom greškom?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  },
+  {
+    "id": 20,
+    "category": "Uslovi / pravila",
+    "question": "Da li je dozvoljeno plaćanje u gotovini direktno na gradilištu?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  },
+  {
+    "id": 21,
+    "category": "Kontakt",
+    "question": "Gde se nalazi centrala kompanije DocuMind?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 22,
+    "category": "Kontakt",
+    "question": "U kom gradu se nalazi distributivni centar kompanije?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 23,
+    "category": "Kontakt",
+    "question": "Kome se prijavljuje reklamacija na oštećenu ambalažu prilikom istovara?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  },
+  {
+    "id": 24,
+    "category": "Kontakt",
+    "question": "Koja je nadležna služba za odobrenje plaćanja kompenzacijom?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  },
+  {
+    "id": 25,
+    "category": "Kontakt",
+    "question": "Koji je identifikacioni broj važećeg cenovnika?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 26,
+    "category": "Parafrazirana pitanja",
+    "question": "Koja je trenutna cena CEM II cementa?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 27,
+    "category": "Parafrazirana pitanja",
+    "question": "Koliko novca treba izdvojiti za CEM II?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 28,
+    "category": "Parafrazirana pitanja",
+    "question": "Po kojoj ceni se prodaje CEM II?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 29,
+    "category": "Parafrazirana pitanja",
+    "question": "Kada mogu očekivati da stigne roba nakon uplate?",
+    "expected_document": "test.pdf",
+    "expected_page": 1,
+    "expected_chunk_index": 1
+  },
+  {
+    "id": 30,
+    "category": "Parafrazirana pitanja",
+    "question": "Mogu li platiti fakturu preko bankovnog računa?",
+    "expected_document": "test.pdf",
+    "expected_page": 2,
+    "expected_chunk_index": 2
+  }
+]

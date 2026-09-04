@@ -11,9 +11,9 @@ import {
 import { Conversation } from './conversation.entity';
 
 export enum MessageRole {
-  USER = 'USER',
-  ASSISTANT = 'ASSISTANT',
-  SYSTEM = 'SYSTEM',
+  USER = 'user',
+  ASSISTANT = 'assistant',
+  SYSTEM = 'system',
 }
 
 @Index(['conversationId', 'createdAt'])
@@ -28,7 +28,7 @@ export class Message {
   })
   conversationId!: string;
 
-  @ManyToOne(() => Conversation, {
+  @ManyToOne(() => Conversation, (conversation) => conversation.messages, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({
@@ -36,7 +36,8 @@ export class Message {
   })
   conversation!: Conversation;
 
-  @Column('enum', {
+  @Column({
+    type: 'enum',
     enum: MessageRole,
   })
   role!: MessageRole;
@@ -45,6 +46,12 @@ export class Message {
     type: 'text',
   })
   content!: string;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+  })
+  sources!: Record<string, any>[] | null;
 
   @CreateDateColumn({
     name: 'created_at',

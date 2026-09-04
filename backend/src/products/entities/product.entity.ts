@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -9,9 +10,9 @@ import {
 
 import { Organization } from '../../organizations/entities/organization.entity';
 
-import { Index } from 'typeorm';
-@Index(['organizationId'])
 @Entity('products')
+@Index(['organizationId'])
+@Index(['organizationId', 'sku'], { unique: true })
 export class Product {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -32,6 +33,12 @@ export class Product {
 
   @Column({
     type: 'varchar',
+    length: 100,
+  })
+  sku!: string;
+
+  @Column({
+    type: 'varchar',
     length: 255,
   })
   name!: string;
@@ -43,12 +50,37 @@ export class Product {
   description!: string | null;
 
   @Column({
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
+    type: 'varchar',
+    length: 100,
     nullable: true,
   })
-  price!: string | null;
+  category!: string | null;
+
+  @Column({
+    type: 'numeric',
+    precision: 12,
+    scale: 2,
+  })
+  price!: number;
+
+  @Column({
+    type: 'integer',
+    default: 0,
+  })
+  stock!: number;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    default: 'piece',
+  })
+  unit!: string;
+
+  @Column({
+    type: 'boolean',
+    default: true,
+  })
+  active!: boolean;
 
   @CreateDateColumn({
     name: 'created_at',

@@ -444,4 +444,18 @@ export class Document {
     name: 'updated_at',
   })
   updatedAt!: Date;
+
+  @Column({
+  name: 'extracted_text',
+  type: 'text',
+  nullable: true,
+  })
+  extractedText!: string | null;
+
+  @Column({
+  name: 'page_count',
+  type: 'integer',
+  nullable: true,
+  })
+  pageCount!: number | null;
 }
