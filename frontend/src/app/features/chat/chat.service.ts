@@ -8,6 +8,20 @@ import {
   SendMessageRequest,
 } from './chat.models';
 
+export interface SourceInfo {
+  document: string;
+  page: number;
+  documentId?: string;
+}
+
+export interface ConversationSummary {
+  summary: string;
+  key_points: string[];
+  decisions: string[];
+  action_items: string[];
+  sources: SourceInfo[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -54,5 +68,10 @@ export class ChatService {
         };
       })
     );
+  }
+
+  summarizeConversation(conversationId: string): Observable<ConversationSummary> {
+    // Ispravljeno: Uklonjen je višak /chat iz putanje pošto backend čeka na /api/documents/...
+    return this.http.post<ConversationSummary>(`http://localhost:3000/api/documents/conversations/${conversationId}/summary`, {});
   }
 }

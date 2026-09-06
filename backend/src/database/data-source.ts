@@ -14,6 +14,8 @@ import { Product } from 'src/products/entities/product.entity';
 import { Offer } from 'src/offers/entities/offer.entity';
 import { AnalyticsEvent } from 'src/analytics/entities/analytics-event.entity';
 import { OfferItem } from 'src/offers/entities/offer-item.entity';
+import { Feedback } from 'src/feedback/entities/feedback.entity';
+import { UnansweredQuestion } from 'src/unanswered-questions/entities/unanswered-question.entity';
 
 export default new DataSource({
   type: 'postgres',
@@ -37,6 +39,8 @@ export default new DataSource({
     Offer,
     OfferItem,
     AnalyticsEvent,
+    Feedback,
+    UnansweredQuestion
   ],
 
   migrations: [

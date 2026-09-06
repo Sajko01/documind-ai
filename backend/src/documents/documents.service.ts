@@ -1,350 +1,5 @@
 
 
-// import {
-//   BadRequestException,
-//   ForbiddenException,
-//   Injectable,
-//   Logger,
-//   NotFoundException,
-// } from '@nestjs/common';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
-// import { HttpService } from '@nestjs/axios';
-// import { ConfigService } from '@nestjs/config';
-// import { firstValueFrom } from 'rxjs';
-// import {
-//   existsSync,
-//   mkdirSync,
-//   unlinkSync,
-//   renameSync,
-//   readFileSync,
-// } from 'fs';
-// import { join, basename } from 'path';
-// import { randomUUID } from 'crypto';
-// import FormData from 'form-data';
-
-// import { Document, DocumentStatus } from './entities/document.entity';
-// import { DocumentChunk } from './entities/document-chunk.entity';
-// import { CreateDocumentDto } from './dto/create-document.dto';
-// import { AiProcessingResponse } from './interfaces/ai-processing-response.interface';
-
-// @Injectable()
-// export class DocumentsService {
-//   private readonly logger = new Logger(DocumentsService.name);
-
-//   private readonly tempDirectory = join(process.cwd(), 'uploads', 'tmp');
-//   private readonly documentsDirectory = join(
-//     process.cwd(),
-//     'uploads',
-//     'documents',
-//   );
-//   private readonly aiServiceUrl: string;
-
-//   constructor(
-//     @InjectRepository(Document)
-//     private readonly documentsRepository: Repository<Document>,
-//     @InjectRepository(DocumentChunk)
-//     private readonly chunksRepository: Repository<DocumentChunk>,
-//     private readonly httpService: HttpService,
-//     private readonly configService: ConfigService,
-//   ) {
-//     this.aiServiceUrl = this.configService.get<string>(
-//       'AI_SERVICE_URL',
-//       'http://localhost:8000',
-//     );
-
-//     this.ensureDirectories();
-//   }
-
-//   // Osigurava postojanje direktorijuma za privremeno i trajno skladištenje
-//   private ensureDirectories(): void {
-//     if (!existsSync(this.tempDirectory)) {
-//       mkdirSync(this.tempDirectory, { recursive: true });
-//     }
-
-//     if (!existsSync(this.documentsDirectory)) {
-//       mkdirSync(this.documentsDirectory, { recursive: true });
-//     }
-//   }
-
-//   // 1. Kreiranje tekstualnog/osnovnog dokumenta
-//   async create(
-//     dto: CreateDocumentDto,
-//     organizationId: string,
-//     createdById: string,
-//   ): Promise<Document> {
-//     const document = this.documentsRepository.create({
-//       ...dto,
-//       organizationId,
-//       createdById,
-//     });
-
-//     return this.documentsRepository.save(document);
-//   }
-
-//   // 2. Upload PDF fajla na disk (sa Magic Bytes proverom) + Pokretanje AI obrade
-//   async upload(
-//     file: Express.Multer.File,
-//     organizationId: string,
-//     createdById: string,
-//   ): Promise<Document> {
-//     if (!file || !file.path) {
-//       throw new BadRequestException('PDF file is required');
-//     }
-
-//     const originalName = basename(file.originalname);
-
-//     if (
-//       !originalName.toLowerCase().endsWith('.pdf') ||
-//       file.mimetype !== 'application/pdf'
-//     ) {
-//       this.deleteFileIfExists(file.path);
-//       throw new BadRequestException('Only PDF files are allowed');
-//     }
-
-//     // 🔒 Validacija PDF Magic Bytes (%PDF-)
-//     try {
-//       this.validatePdfSignature(file.path);
-//     } catch (error) {
-//       this.deleteFileIfExists(file.path);
-//       throw error;
-//     }
-
-//     const documentId = randomUUID();
-//     const filename = `${documentId}.pdf`;
-
-//     const organizationDirectory = join(
-//       this.documentsDirectory,
-//       organizationId,
-//     );
-
-//     if (!existsSync(organizationDirectory)) {
-//       mkdirSync(organizationDirectory, { recursive: true });
-//     }
-
-//     const finalPath = join(organizationDirectory, filename);
-//     const storagePath = `uploads/documents/${organizationId}/${filename}`;
-
-//     renameSync(file.path, finalPath);
-
-//     try {
-//       let document = this.documentsRepository.create({
-//         id: documentId,
-//         organizationId,
-//         createdById,
-//         filename,
-//         originalName,
-//         mimeType: file.mimetype,
-//         size: file.size.toString(),
-//         storagePath,
-//         extractedText: null,
-//         pageCount: null,
-//         status: DocumentStatus.UPLOADED,
-//       });
-
-//       document = await this.documentsRepository.save(document);
-
-//       // Poziv AI servisa za ekstrakciju teksta i chunking
-//       document = await this.processDocument(document);
-
-//       return document;
-//     } catch (error) {
-//       this.deleteFileIfExists(finalPath);
-//       throw error;
-//     }
-//   }
-
-//   async processDocument(document: Document): Promise<Document> {
-//     this.logger.log(`Starting processing for document ${document.id}`);
-
-//     if (!document.storagePath) {
-//       throw new BadRequestException('Document storage path is missing');
-//     }
-
-//     document.status = DocumentStatus.PROCESSING;
-//     await this.documentsRepository.save(document);
-
-//     const physicalPath = join(process.cwd(), document.storagePath);
-
-//     try {
-//       const fileBuffer = readFileSync(physicalPath);
-//       const formData = new FormData();
-
-//       formData.append('document_id', document.id);
-
-//       const filename =
-//         document.originalName || document.filename || 'document.pdf';
-
-//       formData.append('file', fileBuffer, {
-//         filename: filename,
-//         contentType: 'application/pdf',
-//       });
-
-//       const response = await firstValueFrom(
-//         this.httpService.post<AiProcessingResponse>(
-//           `${this.aiServiceUrl}/process-document`,
-//           formData,
-//           {
-//             headers: formData.getHeaders(),
-//             maxBodyLength: 20 * 1024 * 1024,
-//             maxContentLength: 20 * 1024 * 1024,
-//             timeout: 120000,
-//           },
-//         ),
-//       );
-
-//       const result = response.data;
-
-//       document.extractedText = result.text;
-//       document.pageCount = result.page_count;
-
-//       // 🔄 Čuvanje chunk-ova u bazu sa pageNumber i tokenCount
-//       if (result.chunks && result.chunks.length > 0) {
-//         const chunkEntities = result.chunks.map((chunk) =>
-//           this.chunksRepository.create({
-//             documentId: document.id,
-//             pageNumber: chunk.page_number,
-//             chunkIndex: chunk.chunk_index,
-//             content: chunk.content,
-//             tokenCount: chunk.token_count,
-//           }),
-//         );
-
-//         await this.chunksRepository.save(chunkEntities);
-//         this.logger.log(
-//           `Saved ${chunkEntities.length} chunks for document ${document.id}`,
-//         );
-//       }
-
-//       document.status = DocumentStatus.READY;
-
-//       const savedDocument = await this.documentsRepository.save(document);
-//       this.logger.log(`Document ${document.id} processed successfully`);
-
-//       return savedDocument;
-//     } catch (error) {
-//       this.logger.error(
-//         `Document ${document.id} processing failed`,
-//         error instanceof Error ? error.stack : String(error),
-//       );
-
-//       document.status = DocumentStatus.FAILED;
-//       await this.documentsRepository.save(document);
-
-//       return document;
-//     }
-//   }
-
-//   // 4. Pretraga svih dokumenata za organizaciju
-//   async findAll(organizationId: string): Promise<Document[]> {
-//     return this.documentsRepository.find({
-//       where: { organizationId },
-//       order: { createdAt: 'DESC' },
-//     });
-//   }
-
-//   // 5. Brisanje dokumenta (provera prava + čišćenje sa diska)
-//   async delete(
-//     documentId: string,
-//     userOrganizationId: string,
-//   ): Promise<{ success: boolean; message: string }> {
-//     const document = await this.documentsRepository.findOne({
-//       where: { id: documentId },
-//     });
-
-//     if (!document) {
-//       throw new NotFoundException({
-//         success: false,
-//         error: {
-//           code: 'DOCUMENT_NOT_FOUND',
-//           message: 'Document does not exist',
-//         },
-//       });
-//     }
-
-//     // 🔒 Security Guard: Ako dokument pripada drugoj organizaciji
-//     if (document.organizationId !== userOrganizationId) {
-//       throw new ForbiddenException({
-//         success: false,
-//         error: {
-//           code: 'FORBIDDEN_RESOURCE',
-//           message: 'You do not have access to this document',
-//         },
-//       });
-//     }
-
-//     // Fizičko brisanje fajla sa diska ako postoji
-//     if (document.storagePath) {
-//       const physicalPath = join(process.cwd(), document.storagePath);
-//       this.deleteFileIfExists(physicalPath);
-//     }
-
-//     await this.documentsRepository.remove(document);
-
-//     return {
-//       success: true,
-//       message: 'Document successfully deleted',
-//     };
-//   }
-
-//   // Helper metoda za brisanje sa diska
-//   private deleteFileIfExists(filePath: string): void {
-//     if (existsSync(filePath)) {
-//       unlinkSync(filePath);
-//     }
-//   }
-
-//   // Helper metoda za Magic Bytes proveru (%PDF-)
-//   private validatePdfSignature(filePath: string): void {
-//     const buffer = readFileSync(filePath);
-//     const header = buffer.subarray(0, 5).toString('ascii');
-
-//     if (header !== '%PDF-') {
-//       throw new BadRequestException('Invalid PDF file signature');
-//     }
-//   }
-
-//   // Pretraga svih chunk-ova za određeni dokument (uz proveru organizacije)
-//   async findChunks(
-//     documentId: string,
-//     organizationId: string,
-//   ): Promise<DocumentChunk[]> {
-//     // 1. Prvo proveravamo da li dokument postoji i da li pripada organizaciji korisnika
-//     const document = await this.documentsRepository.findOne({
-//       where: { id: documentId },
-//     });
-
-//     if (!document) {
-//       throw new NotFoundException({
-//         success: false,
-//         error: {
-//           code: 'DOCUMENT_NOT_FOUND',
-//           message: 'Document does not exist',
-//         },
-//       });
-//     }
-
-//     // 🔒 Security Guard: Sprečava pristup dokumentima iz drugih organizacija
-//     if (document.organizationId !== organizationId) {
-//       throw new ForbiddenException({
-//         success: false,
-//         error: {
-//           code: 'FORBIDDEN_RESOURCE',
-//           message: 'You do not have access to this document',
-//         },
-//       });
-//     }
-
-//     // 2. Vraćamo sve chunk-ove sortirane po stranici i po redosledu unutar stranice
-//     return this.chunksRepository.find({
-//       where: { documentId },
-//       order: {
-//         pageNumber: 'ASC',
-//         chunkIndex: 'ASC',
-//       },
-//     });
-//   }
-// }
 
 import {
   BadRequestException,
@@ -376,6 +31,8 @@ import { AiProcessingResponse } from './interfaces/ai-processing-response.interf
 import { AiEmbeddingResponse } from './interfaces/ai-embedding.interface';
 import { DocumentSearchResponse, DocumentSearchResult } from './interfaces/document-search.interface';
 import { AiGenerationResponse } from './interfaces/ai-generation.interface';
+import { AnalyticsService } from 'src/analytics/analytics.service';
+import { AnalyticsEventType } from 'src/analytics/enums/analytics-event-type.enum';
 
 @Injectable()
 export class DocumentsService {
@@ -396,6 +53,7 @@ export class DocumentsService {
     private readonly chunksRepository: Repository<DocumentChunk>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly analyticsService: AnalyticsService,
   ) {
     this.aiServiceUrl = this.configService.get<string>(
       'AI_SERVICE_URL',
@@ -431,6 +89,77 @@ export class DocumentsService {
     return this.documentsRepository.save(document);
   }
 
+  // // 2. Upload PDF fajla na disk (sa Magic Bytes proverom) + Pokretanje AI obrade
+  // async upload(
+  //   file: Express.Multer.File,
+  //   organizationId: string,
+  //   createdById: string,
+  // ): Promise<Document> {
+  //   if (!file || !file.path) {
+  //     throw new BadRequestException('PDF file is required');
+  //   }
+
+  //   const originalName = basename(file.originalname);
+
+  //   if (
+  //     !originalName.toLowerCase().endsWith('.pdf') ||
+  //     file.mimetype !== 'application/pdf'
+  //   ) {
+  //     this.deleteFileIfExists(file.path);
+  //     throw new BadRequestException('Only PDF files are allowed');
+  //   }
+
+  //   // 🔒 Validacija PDF Magic Bytes (%PDF-)
+  //   try {
+  //     this.validatePdfSignature(file.path);
+  //   } catch (error) {
+  //     this.deleteFileIfExists(file.path);
+  //     throw error;
+  //   }
+
+  //   const documentId = randomUUID();
+  //   const filename = `${documentId}.pdf`;
+
+  //   const organizationDirectory = join(
+  //     this.documentsDirectory,
+  //     organizationId,
+  //   );
+
+  //   if (!existsSync(organizationDirectory)) {
+  //     mkdirSync(organizationDirectory, { recursive: true });
+  //   }
+
+  //   const finalPath = join(organizationDirectory, filename);
+  //   const storagePath = `uploads/documents/${organizationId}/${filename}`;
+
+  //   renameSync(file.path, finalPath);
+
+  //   try {
+  //     let document = this.documentsRepository.create({
+  //       id: documentId,
+  //       organizationId,
+  //       createdById,
+  //       filename,
+  //       originalName,
+  //       mimeType: file.mimetype,
+  //       size: file.size.toString(),
+  //       storagePath,
+  //       extractedText: null,
+  //       pageCount: null,
+  //       status: DocumentStatus.UPLOADED,
+  //     });
+
+  //     document = await this.documentsRepository.save(document);
+
+  //     // Poziv AI servisa za ekstrakciju teksta i chunking
+  //     document = await this.processDocument(document);
+
+  //     return document;
+  //   } catch (error) {
+  //     this.deleteFileIfExists(finalPath);
+  //     throw error;
+  //   }
+  // }
   // 2. Upload PDF fajla na disk (sa Magic Bytes proverom) + Pokretanje AI obrade
   async upload(
     file: Express.Multer.File,
@@ -496,12 +225,78 @@ export class DocumentsService {
       // Poziv AI servisa za ekstrakciju teksta i chunking
       document = await this.processDocument(document);
 
+      // 📊 A) Logovanje event-a nakon uspešnog upload-a dokumenta
+      await this.analyticsService.trackEvent({
+        organizationId: organizationId,
+        userId: createdById,
+        eventType: AnalyticsEventType.DOCUMENT_UPLOADED,
+        documentId: document.id,
+        metadata: {
+          filename: document.originalName,
+          mimeType: document.mimeType,
+          size: document.size,
+        },
+      });
+
       return document;
     } catch (error) {
       this.deleteFileIfExists(finalPath);
       throw error;
     }
   }
+
+  // 5. Brisanje dokumenta (provera prava + čišćenje sa diska)
+  async delete(
+    documentId: string,
+    userOrganizationId: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const document = await this.documentsRepository.findOne({
+      where: { id: documentId },
+    });
+
+    if (!document) {
+      throw new NotFoundException({
+        success: false,
+        error: {
+          code: 'DOCUMENT_NOT_FOUND',
+          message: 'Document does not exist',
+        },
+      });
+    }
+
+    // 🔒 Security Guard: Ako dokument pripada drugoj organizaciji
+    if (document.organizationId !== userOrganizationId) {
+      throw new ForbiddenException({
+        success: false,
+        error: {
+          code: 'FORBIDDEN_RESOURCE',
+          message: 'You do not have access to this document',
+        },
+      });
+    }
+
+    // Fizičko brisanje fajla sa diska ako postoji
+    if (document.storagePath) {
+      const physicalPath = join(process.cwd(), document.storagePath);
+      this.deleteFileIfExists(physicalPath);
+    }
+
+    await this.documentsRepository.remove(document);
+
+    // 📊 B) Logovanje event-a nakon uspešnog brisanja dokumenta
+    await this.analyticsService.trackEvent({
+      organizationId: userOrganizationId,
+      userId: document.createdById ?? null,
+      eventType: AnalyticsEventType.DOCUMENT_DELETED,
+      documentId: documentId,
+    });
+
+    return {
+      success: true,
+      message: 'Document successfully deleted',
+    };
+  }
+
 
   async processDocument(document: Document): Promise<Document> {
     this.logger.log(`Starting processing for document ${document.id}`);
@@ -603,49 +398,49 @@ export class DocumentsService {
     });
   }
 
-  // 5. Brisanje dokumenta (provera prava + čišćenje sa diska)
-  async delete(
-    documentId: string,
-    userOrganizationId: string,
-  ): Promise<{ success: boolean; message: string }> {
-    const document = await this.documentsRepository.findOne({
-      where: { id: documentId },
-    });
+  // // 5. Brisanje dokumenta (provera prava + čišćenje sa diska)
+  // async delete(
+  //   documentId: string,
+  //   userOrganizationId: string,
+  // ): Promise<{ success: boolean; message: string }> {
+  //   const document = await this.documentsRepository.findOne({
+  //     where: { id: documentId },
+  //   });
 
-    if (!document) {
-      throw new NotFoundException({
-        success: false,
-        error: {
-          code: 'DOCUMENT_NOT_FOUND',
-          message: 'Document does not exist',
-        },
-      });
-    }
+  //   if (!document) {
+  //     throw new NotFoundException({
+  //       success: false,
+  //       error: {
+  //         code: 'DOCUMENT_NOT_FOUND',
+  //         message: 'Document does not exist',
+  //       },
+  //     });
+  //   }
 
-    // 🔒 Security Guard: Ako dokument pripada drugoj organizaciji
-    if (document.organizationId !== userOrganizationId) {
-      throw new ForbiddenException({
-        success: false,
-        error: {
-          code: 'FORBIDDEN_RESOURCE',
-          message: 'You do not have access to this document',
-        },
-      });
-    }
+  //   // 🔒 Security Guard: Ako dokument pripada drugoj organizaciji
+  //   if (document.organizationId !== userOrganizationId) {
+  //     throw new ForbiddenException({
+  //       success: false,
+  //       error: {
+  //         code: 'FORBIDDEN_RESOURCE',
+  //         message: 'You do not have access to this document',
+  //       },
+  //     });
+  //   }
 
-    // Fizičko brisanje fajla sa diska ako postoji
-    if (document.storagePath) {
-      const physicalPath = join(process.cwd(), document.storagePath);
-      this.deleteFileIfExists(physicalPath);
-    }
+  //   // Fizičko brisanje fajla sa diska ako postoji
+  //   if (document.storagePath) {
+  //     const physicalPath = join(process.cwd(), document.storagePath);
+  //     this.deleteFileIfExists(physicalPath);
+  //   }
 
-    await this.documentsRepository.remove(document);
+  //   await this.documentsRepository.remove(document);
 
-    return {
-      success: true,
-      message: 'Document successfully deleted',
-    };
-  }
+  //   return {
+  //     success: true,
+  //     message: 'Document successfully deleted',
+  //   };
+  // }
 
   // Helper metoda za brisanje sa diska
   private deleteFileIfExists(filePath: string): void {
@@ -975,5 +770,7 @@ async findOne(id: string, organizationId: string) {
     where: { id, organizationId },
   });
 }
+
+
 
 }

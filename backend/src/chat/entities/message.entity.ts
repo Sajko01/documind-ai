@@ -57,4 +57,11 @@ export class Message {
     name: 'created_at',
   })
   createdAt!: Date;
+
+  // OVO JE FALIČNO - dodaj ova dva polja da TypeORM ne bi bacao grešku:
+  @Column({ type: 'float', nullable: true })
+  confidence?: number;
+
+  @Column({ type: 'boolean', default: true })
+  answered?: boolean;
 }

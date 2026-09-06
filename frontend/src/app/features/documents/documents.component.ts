@@ -8,11 +8,13 @@ import { CommonModule } from '@angular/common';
 
 import {
   DocumentsService,
+  DocumentSummary,
 } from '../../core/documents/documents.service';
 
 import {
   Document,
 } from '../../core/documents/document.models';
+
 
 @Component({
   selector: 'app-documents',
@@ -28,6 +30,16 @@ export class DocumentsComponent
 
   private readonly documentsService =
     inject(DocumentsService);
+
+    selectedSummary:
+  DocumentSummary | null = null;
+
+  summaryLoading = false;
+
+  summaryError = '';
+
+  selectedDocumentId:
+  string | null = null;
 
   documents: Document[] = [];
 
@@ -138,6 +150,50 @@ export class DocumentsComponent
       });
   }
 
+  generateSummary(
+  documentId: string,
+): void {
+
+  this.summaryLoading = true;
+
+  this.summaryError = '';
+
+  this.selectedSummary = null;
+
+  this.selectedDocumentId =
+    documentId;
+
+
+  this.documentsService
+    .generateSummary(documentId)
+    .subscribe({
+
+      next: summary => {
+
+        this.selectedSummary =
+          summary;
+
+        this.summaryLoading =
+          false;
+      },
+
+      error: error => {
+
+        console.error(
+          'Summary generation failed:',
+          error,
+        );
+
+        this.summaryError =
+          'Failed to generate summary.';
+
+        this.summaryLoading =
+          false;
+      },
+
+    });
+}
+
   deleteDocument(
     document: Document,
   ): void {
@@ -197,4 +253,9 @@ export class DocumentsComponent
       (1024 * 1024)
     ).toFixed(1)} MB`;
   }
+
+
+
+  
 }
+

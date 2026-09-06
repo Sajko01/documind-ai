@@ -24,7 +24,7 @@ class LlmService:
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=0.2,
-                max_tokens=1024,
+                max_tokens=2000,
             )
             return response.choices[0].message.content or ""
         except Exception as e:
@@ -37,7 +37,7 @@ class LlmService:
                 "model": self.model,
                 "messages": messages,
                 "temperature": 0.2,
-                "max_tokens": 1024,
+                "max_tokens": 1000,
             }
             if tools:
                 kwargs["tools"] = tools
@@ -60,7 +60,7 @@ class LlmService:
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=0.2,
-                max_tokens=1024,
+                max_tokens=1000,
                 stream=True,
             )
 

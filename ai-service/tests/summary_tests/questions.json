@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "question": "What is the price of CEM II 42.5N?"
+  },
+  {
+    "id": 2,
+    "question": "What are the delivery conditions?"
+  },
+  {
+    "id": 3,
+    "question": "Which products are available?"
+  },
+  {
+    "id": 4,
+    "question": "What package sizes are available?"
+  },
+  {
+    "id": 5,
+    "question": "Is CEM II available?"
+  }
+]

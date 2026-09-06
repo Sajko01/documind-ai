@@ -63,6 +63,26 @@ export const routes: Routes = [
     ),
   },
   {
+  path: 'email',
+    canActivate: [authGuard],
+  loadComponent: () =>
+    import(
+      './features/email/email.component'
+    ).then(
+      m => m.EmailComponent,
+    ),
+  },
+  {
+  path: 'unanswered-questions',
+    canActivate: [authGuard],
+  loadComponent: () =>
+    import(
+      './features/unanswered-questions/unanswered-questions.component'
+    ).then(
+      m => m.UnansweredQuestionsComponent
+    ),
+ },
+  {
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full',

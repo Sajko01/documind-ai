@@ -41,6 +41,6 @@ export class Organization {
   @OneToMany(() => Offer, (offer) => offer.organization)
   offers!: Offer[];
 
-  @OneToMany(() => AnalyticsEvent, (event) => event.organization)
+  @OneToMany(() => AnalyticsEvent, (event) => event.organizationId) // ili kako već mapiraš relaciju
   analyticsEvents!: AnalyticsEvent[];
 }

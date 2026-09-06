@@ -27,6 +27,10 @@ export interface ChatMessage {
   sources?: ChatSource[];
   toolResults?: ToolResult[];
   createdAt?: string;
+    feedbackRating?:
+    | 'POSITIVE'
+    | 'NEGATIVE'
+    | null;
 }
 
 export interface SendMessageRequest {

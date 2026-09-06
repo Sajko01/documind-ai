@@ -55,8 +55,7 @@ export interface Offer {
 })
 export class OffersService {
 
-  private readonly apiUrl =
-    '/api/offers';
+private readonly apiUrl = 'http://localhost:3000/api/offers';
 
   constructor(
     private readonly http: HttpClient,

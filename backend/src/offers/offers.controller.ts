@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards, // 👈 1. Uvezen UseGuards
 } from '@nestjs/common';
 
@@ -37,21 +38,20 @@ export class OffersController {
     private readonly offersService: OffersService,
   ) {}
 
-  @Post()
-  async create(
-    @CurrentUser() user: any, // 👈 Korišćen tvoj dekorator umesto @Req()
-    @Body() createOfferDto: CreateOfferDto,
-  ) {
-    console.log('USER IZ REQUESTA:', user);
-    
-    const organizationId = user?.organizationId;
-    
-    if (!organizationId) {
-      throw new BadRequestException('Organization ID is missing from user session');
-    }
+@Post()
+create(
+  @Req() req: any, // 👈 Osiguraj se da imaš @Req() ili @GetUser() dekorator
+  @Body() createOfferDto: CreateOfferDto,
+) {
+  const organizationId = req.user.organizationId; // ili odakle već čitaš organizaciju
+  const userId = req.user.id;                     // 👈 ID ulogovanog korisnika
 
-    return this.offersService.create(organizationId, createOfferDto);
-  }
+  return this.offersService.create(
+    organizationId,
+    userId,        // 👈 Prosleđujemo userId kao drugi argument
+    createOfferDto,
+  );
+}
 
   @Get()
   async findAll(

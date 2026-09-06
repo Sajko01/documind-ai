@@ -16,20 +16,16 @@ export class OfferToolsService {
 
   async createOffer(
     organizationId: string,
+    userId: string, // 👈 Dodato ovde da bi se prosledilo u service
     args: Record<string, any>,
   ) {
-
     return this.offersService.create(
       organizationId,
+      userId, // 👈 Prosleđujemo userId
       {
-        customerName:
-          args.customerName,
-
-        customerEmail:
-          args.customerEmail,
-
-        items:
-          args.items,
+        customerName: args.customerName,
+        customerEmail: args.customerEmail,
+        items: args.items,
       },
     );
   }

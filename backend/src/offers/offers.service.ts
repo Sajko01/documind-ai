@@ -32,6 +32,15 @@ import {
   ProductsService,
 } from '../products/products.service';
 
+// 📊 Importi za analitiku
+import {
+  AnalyticsService,
+} from '../analytics/analytics.service';
+
+import {
+  AnalyticsEventType,
+} from '../analytics/enums/analytics-event-type.enum';
+
 @Injectable()
 export class OffersService {
 
@@ -46,10 +55,15 @@ export class OffersService {
 
     private readonly productsService:
       ProductsService,
+
+    // 📊 Injektujemo AnalyticsService
+    private readonly analyticsService:
+      AnalyticsService,
   ) {}
 
   async create(
     organizationId: string,
+    userId: string, // 👈 Dodat userId da bismo ga evidentirali u analitici
     dto: CreateOfferDto,
   ) {
     if (
@@ -138,7 +152,18 @@ export class OffersService {
 
     await this.offerItemRepository.save(itemEntities);
 
-    // 5. Vraćamo kompletnu ponudu sa stavkama
+    // 📊 5. Logovanje event-a da je ponuda uspešno kreirana
+    await this.analyticsService.trackEvent({
+      organizationId: organizationId,
+      userId: userId,
+      eventType: AnalyticsEventType.OFFER_CREATED,
+      metadata: {
+        offerId: savedOffer.id,
+        total: savedOffer.total,
+      },
+    });
+
+    // 6. Vraćamo kompletnu ponudu sa stavkama
     return this.findOne(
       organizationId,
       savedOffer.id,
@@ -147,7 +172,6 @@ export class OffersService {
 
 
   private async generateOfferNumber() {
-
     const count =
       await this.offerRepository.count();
 
@@ -160,111 +184,107 @@ export class OffersService {
   }
 
   async findAll(
-  organizationId: string,
-) {
-
-  return this.offerRepository.find({
-    where: {
-      organizationId,
-    },
-
-    relations: {
-        items: true, // 👈 Umesto niza ['items']
-      },
-
-    order: {
-      createdAt: 'DESC',
-    },
-  });
-}
-
-
-async findOne(
-  organizationId: string,
-  id: string,
-) {
-
-  const offer =
-    await this.offerRepository.findOne({
+    organizationId: string,
+  ) {
+    return this.offerRepository.find({
       where: {
-        id,
         organizationId,
       },
 
-     relations: {
-        items: true, // 👈 Umesto niza ['items']
+      relations: {
+        items: true,
+      },
+
+      order: {
+        createdAt: 'DESC',
       },
     });
-
-  if (!offer) {
-    throw new NotFoundException(
-      'Offer not found',
-    );
   }
 
-  return offer;
-}
 
-async update(
-  organizationId: string,
-  id: string,
-  dto: Partial<CreateOfferDto>,
-) {
-
-  const offer =
-    await this.findOne(
-      organizationId,
-      id,
-    );
-
-  if (
-    offer.status !== OfferStatus.DRAFT
+  async findOne(
+    organizationId: string,
+    id: string,
   ) {
-    throw new BadRequestException(
-      'Only draft offers can be updated',
-    );
+    const offer =
+      await this.offerRepository.findOne({
+        where: {
+          id,
+          organizationId,
+        },
+
+        relations: {
+          items: true,
+        },
+      });
+
+    if (!offer) {
+      throw new NotFoundException(
+        'Offer not found',
+      );
+    }
+
+    return offer;
   }
 
-  if (dto.customerName !== undefined) {
-    offer.customerName =
-      dto.customerName;
-  }
-
-  if (dto.customerEmail !== undefined) {
-    offer.customerEmail =
-      dto.customerEmail;
-  }
-
-  return this.offerRepository.save(
-    offer,
-  );
-}
-
-async remove(
-  organizationId: string,
-  id: string,
-) {
-
-  const offer =
-    await this.findOne(
-      organizationId,
-      id,
-    );
-
-  if (
-    offer.status !== OfferStatus.DRAFT
+  async update(
+    organizationId: string,
+    id: string,
+    dto: Partial<CreateOfferDto>,
   ) {
-    throw new BadRequestException(
-      'Only draft offers can be deleted',
+    const offer =
+      await this.findOne(
+        organizationId,
+        id,
+      );
+
+    if (
+      offer.status !== OfferStatus.DRAFT
+    ) {
+      throw new BadRequestException(
+        'Only draft offers can be updated',
+      );
+    }
+
+    if (dto.customerName !== undefined) {
+      offer.customerName =
+        dto.customerName;
+    }
+
+    if (dto.customerEmail !== undefined) {
+      offer.customerEmail =
+        dto.customerEmail;
+    }
+
+    return this.offerRepository.save(
+      offer,
     );
   }
 
-  await this.offerRepository.remove(
-    offer,
-  );
+  async remove(
+    organizationId: string,
+    id: string,
+  ) {
+    const offer =
+      await this.findOne(
+        organizationId,
+        id,
+      );
 
-  return {
-    success: true,
-  };
-}
+    if (
+      offer.status !== OfferStatus.DRAFT
+    ) {
+      throw new BadRequestException(
+        'Only draft offers can be deleted',
+      );
+    }
+
+    await this.offerRepository.remove(
+      offer,
+    );
+
+    return {
+      success: true,
+    };
+  }
 }

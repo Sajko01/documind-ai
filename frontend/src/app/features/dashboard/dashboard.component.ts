@@ -1,86 +1,128 @@
-import { Component, inject } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { AsyncPipe, CommonModule, NgIf, DecimalPipe, PercentPipe } from '@angular/common'; // <-- Dodat PercentPipe
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { DashboardService, DashboardMetrics, AiMetrics, PopularQuestion, PopularDocument } from './dashboard.service';
+import { MatCardModule } from '@angular/material/card';
+import { FeedbackService } from '../feedback/services/feedback.service';
+import { UnansweredQuestion } from '../unanswered-questions/unanswered-question.model';
+
+export interface FeedbackStatistics {
+  positivePercentage: number;
+  negativePercentage: number;
+  total: number;
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [AsyncPipe],
-  template: `
-    <div class="dashboard-container">
-      @if (user$ | async; as user) {
-        <header class="dashboard-header">
-          <div>
-            <h1>Dobrodošli, {{ user.name }}!</h1>
-            <p>Rola: <strong>{{ user.role }}</strong> | Org ID: {{ user.organizationId }}</p>
-          </div>
-          <button (click)="logout()" class="logout-btn">Odjavi se</button>
-        </header>
-
-        <main class="dashboard-content">
-          <div class="card">
-            <h3>Korisnički profil</h3>
-            <p><strong>Email:</strong> {{ user.email }}</p>
-            <p><strong>ID:</strong> {{ user.id }}</p>
-          </div>
-
-          <div class="card">
-            <h3>DocuMind Statstika</h3>
-            <p>Uspešno ste ulogovani u sistem.</p>
-          </div>
-        </main>
-      }
-    </div>
-  `,
-  styles: [`
-    .dashboard-container {
-      padding: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      font-family: sans-serif;
-    }
-    .dashboard-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 1rem;
-      margin-bottom: 2rem;
-    }
-    .logout-btn {
-      padding: 0.5rem 1rem;
-      background-color: #e53e3e;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .logout-btn:hover {
-      background-color: #c53030;
-    }
-    .dashboard-content {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-    .card {
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 1.5rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-  `]
+  imports: [AsyncPipe, NgIf, MatCardModule, DecimalPipe, PercentPipe, CommonModule], // <-- Dodat PercentPipe u imports
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly dashboardService = inject(DashboardService);
+  private readonly feadbackService = inject(FeedbackService);
   private readonly router = inject(Router);
 
-  // Preuzimanje user$ observable-a direktno iz AuthService-a
   readonly user$ = this.authService.user$;
+
+  popularDocuments: PopularDocument[] = [];
+  metrics: DashboardMetrics | null = null;
+  loading = false;
+  error = '';
+  popularQuestions: PopularQuestion[] = [];
+  feedbackStatistics: FeedbackStatistics | null = null;
+  aiMetrics: AiMetrics | null = null;
+  unansweredQuestions: UnansweredQuestion[] = [];
+
+  ngOnInit(): void {
+    this.loadDashboard();
+    this.loadAiMetrics();
+    this.loadPopularQuestions();
+    this.loadPopularDocuments();
+    this.loadFeedbackStatistics();
+    this.loadUnansweredQuestions();
+  }
+
+  loadDashboard(): void {
+    this.loading = true;
+    this.error = '';
+
+    this.dashboardService.getDashboard().subscribe({
+      next: (metrics) => {
+        this.metrics = metrics;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Dashboard loading failed:', error);
+        this.error = 'Neuspešno učitavanje analitike.';
+        this.loading = false;
+      },
+    });
+  }
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  loadAiMetrics(): void {
+    this.dashboardService.getAiMetrics().subscribe({
+      next: (metrics: any) => {
+        this.aiMetrics = {
+          averageResponseTime: Number(metrics?.averageResponseTime ?? 0),
+          averageRetrievalScore: Number(metrics?.averageRetrievalScore ?? 0)
+        };
+      },
+      error: (error) => {
+        console.error('AI metrics failed:', error);
+      },
+    });
+  }
+
+  loadPopularQuestions(): void {
+    this.dashboardService.getPopularQuestions().subscribe({
+      next: questions => {
+        this.popularQuestions = questions;
+      },
+      error: error => {
+        console.error('Popular questions failed:', error);
+      },
+    });
+  }
+
+  loadPopularDocuments(): void {
+    this.dashboardService.getPopularDocuments().subscribe({
+      next: documents => {
+        this.popularDocuments = documents;
+      },
+      error: error => {
+        console.error('Popular documents failed:', error);
+      },
+    });
+  }
+
+  loadFeedbackStatistics(): void {
+    this.feadbackService.getStatistics().subscribe({
+      next: (stats) => {
+        this.feedbackStatistics = stats;
+      },
+      error: (error) => {
+        console.error('Feedback statistics failed:', error);
+      },
+    });
+  }
+
+  loadUnansweredQuestions(): void {
+    this.dashboardService.getUnansweredQuestions().subscribe({
+      next: questions => {
+        this.unansweredQuestions = questions;
+      },
+      error: error => {
+        console.error('Unanswered questions failed:', error);
+      },
+    });
   }
 }

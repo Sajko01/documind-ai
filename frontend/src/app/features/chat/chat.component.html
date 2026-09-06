@@ -44,7 +44,96 @@
       <span *ngIf="selectedConversationId">
         Conversation
       </span>
+      <button
+        mat-stroked-button
+        (click)="summarizeConversation()"
+      >
+        Summarize conversation
+      </button>
     </header>
+
+    <!-- CONVERSATION SUMMARY LOADING STATE -->
+    <div
+      *ngIf="conversationSummaryLoading"
+      class="summary-loading"
+    >
+      Generating summary...
+    </div>
+
+    <!-- CONVERSATION SUMMARY CONTENT -->
+    <div
+      *ngIf="conversationSummary"
+      class="conversation-summary"
+    >
+      <h2>
+        Conversation Summary
+      </h2>
+
+      <p>
+        {{ conversationSummary.summary }}
+      </p>
+
+      <h3>
+        Key points
+      </h3>
+
+      <ul>
+        <li
+          *ngFor="
+            let item
+            of conversationSummary.key_points
+          "
+        >
+          {{ item }}
+        </li>
+      </ul>
+
+      <h3>
+        Decisions
+      </h3>
+
+      <ul>
+        <li
+          *ngFor="
+            let item
+            of conversationSummary.decisions
+          "
+        >
+          {{ item }}
+        </li>
+      </ul>
+
+      <h3>
+        Action items
+      </h3>
+
+      <ul>
+        <li
+          *ngFor="
+            let item
+            of conversationSummary.action_items
+          "
+        >
+          {{ item }}
+        </li>
+      </ul>
+
+      <!-- DODATO: PRIKAZ IZVORA ZA SUMU -->
+      <div
+        *ngIf="conversationSummary.sources && conversationSummary.sources.length > 0"
+        class="summary-sources"
+      >
+        <h3>Sources</h3>
+        <div class="sources-list">
+          <div
+            *ngFor="let src of conversationSummary.sources"
+            class="source-badge"
+          >
+            📄 {{ src.document }} (Page {{ src.page }})
+          </div>
+        </div>
+      </div>
+    </div>
 
 
     <!-- MESSAGES -->
@@ -76,7 +165,7 @@
           {{ message.content }}
         </div>
 
-        <!-- AI TOOLS USED (Prikazuje se samo za asistenta i samo ako su korišćeni alati) -->
+        <!-- AI TOOLS USED -->
         <div
           *ngIf="
             message.role === 'assistant' &&
@@ -99,14 +188,13 @@
             <span *ngIf="tool.tool === 'get_product'">Product lookup</span>
             <span *ngIf="tool.tool === 'calculate_offer'">Offer calculation</span>
             
-            <!-- Fallback za sve ostale alate -->
             <span *ngIf="tool.tool !== 'search_products' && tool.tool !== 'get_product' && tool.tool !== 'calculate_offer'">
               {{ tool.tool }}
             </span>
           </div>
         </div>
 
-        <!-- SOURCES (Prikazuje se SAMO za asistenta i SAMO ako ima bar 1 izvor) -->
+        <!-- SOURCES -->
         <div
           *ngIf="
             message.role === 'assistant' &&
@@ -138,6 +226,39 @@
             </span>
           </button>
         </div>
+
+        <!-- FEEDBACK DUGMAD ZA ASISTENTA -->
+        <div
+          class="feedback"
+          *ngIf="message.role === 'assistant'"
+        >
+          <span>
+            Was this answer helpful?
+          </span>
+
+          <button
+            mat-icon-button
+            type="button"
+            [disabled]="message.feedbackRating"
+            [class.selected]="message.feedbackRating === 'POSITIVE'"
+            (click)="submitFeedback(message, 'POSITIVE')"
+            aria-label="Helpful"
+          >
+            👍
+          </button>
+
+          <button
+            mat-icon-button
+            type="button"
+            [disabled]="message.feedbackRating"
+            [class.selected]="message.feedbackRating === 'NEGATIVE'"
+            (click)="submitFeedback(message, 'NEGATIVE')"
+            aria-label="Not helpful"
+          >
+            👎
+          </button>
+        </div>
+
       </div>
 
       <!-- LOADING / THINKING STATE -->

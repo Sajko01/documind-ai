@@ -27,10 +27,23 @@ export interface AiSearchResponse {
   results: AiSearchResult[];
 }
 
+// export interface AiGenerationResponse {
+//   success: boolean;
+//   answer: string;
+//   model: string;
+// }
+
 export interface AiGenerationResponse {
   success: boolean;
   answer: string;
   model: string;
+  sources: Array<{
+    document: string;
+    page: number;
+    content?: string;
+  }>;
+  confidence: number;
+  answered: boolean;
 }
 
 export interface SourceCitation {

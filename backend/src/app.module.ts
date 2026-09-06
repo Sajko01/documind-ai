@@ -77,6 +77,15 @@ import { AnalyticsEvent } from './analytics/entities/analytics-event.entity';
 import { Organization } from './organizations/entities/organization.entity';
 import { User } from './users/entities/user.entity';
 import { OfferItem } from './offers/entities/offer-item.entity';
+import { EmailModule } from './email_generation/email.module';
+import {
+  SummarizationModule,
+} from './summarization/summarization.module';
+import { FeedbackModule } from './feedback/feedback.module';
+import { Feedback } from './feedback/entities/feedback.entity';
+import { UnansweredQuestionsModule } from './unanswered-questions/unanswered-questions.module';
+import { UnansweredQuestion } from './unanswered-questions/entities/unanswered-question.entity';
+
 
 @Module({
   imports: [
@@ -107,6 +116,9 @@ import { OfferItem } from './offers/entities/offer-item.entity';
           Offer,
           OfferItem,
           AnalyticsEvent,
+          Feedback,
+          UnansweredQuestion
+         
         ],
 
         synchronize: false,
@@ -121,6 +133,10 @@ import { OfferItem } from './offers/entities/offer-item.entity';
     ProductsModule,
     OffersModule,
     AnalyticsModule,
+    EmailModule,
+    SummarizationModule,
+    FeedbackModule,
+     UnansweredQuestionsModule,
   ],
 })
 export class AppModule {}

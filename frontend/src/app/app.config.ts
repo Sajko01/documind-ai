@@ -19,6 +19,8 @@ import {
   authInterceptor,
 } from './core/auth/auth.interceptor';
 
+import { provideAnimations } from '@angular/platform-browser/animations';
+
 export const appConfig:
   ApplicationConfig = {
   providers: [
@@ -29,5 +31,6 @@ export const appConfig:
         authInterceptor,
       ]),
     ),
+    provideAnimations()
   ],
 };

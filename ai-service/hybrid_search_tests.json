@@ -1,0 +1,22 @@
+[
+  {
+    "question": "CEM-II-42.5",
+    "type": "sku",
+    "expected_document": "cenovnik.pdf"
+  },
+  {
+    "question": "CEM II",
+    "type": "product_name",
+    "expected_document": "cenovnik.pdf"
+  },
+  {
+    "question": "12.50 EUR",
+    "type": "exact_number",
+    "expected_document": "cenovnik.pdf"
+  },
+  {
+    "question": "Koji su uslovi dostave?",
+    "type": "semantic",
+    "expected_document": "faq.pdf"
+  }
+]

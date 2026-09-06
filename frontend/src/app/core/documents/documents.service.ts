@@ -7,30 +7,37 @@ import {
   DocumentListResponse,
 } from './document.models';
 
+// Definišemo DocumentSummary za Korak 19
+export interface DocumentSummary {
+  summary: string;
+  key_points: string[];
+  products: string[];
+  prices: string[];
+  important_conditions: string[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class DocumentsService {
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl =
-    'http://localhost:3000/api/documents';
+  // Centralizovan URL
+  private readonly apiUrl = 'http://localhost:3000/api/documents';
 
-  getDocuments(): Observable<DocumentListResponse> {
-    return this.http.get<DocumentListResponse>(
-      this.apiUrl,
-    );
+  /**
+   * Dobavljanje svih dokumenata (vraća objekat sa data: Document[])
+   */
+  getDocuments(): Observable<{ data: Document[] }> {
+    return this.http.get<{ data: Document[] }>(this.apiUrl);
   }
 
-  uploadDocument(
-    file: File,
-  ): Observable<unknown> {
+  /**
+   * Otpremanje dokumenta
+   */
+  uploadDocument(file: File): Observable<unknown> {
     const formData = new FormData();
-
-    formData.append(
-      'file',
-      file,
-    );
+    formData.append('file', file);
 
     return this.http.post(
       `${this.apiUrl}/upload`,
@@ -38,11 +45,26 @@ export class DocumentsService {
     );
   }
 
-  deleteDocument(
-    id: string,
-  ): Observable<unknown> {
+  /**
+   * Brisanje dokumenta po ID-ju
+   */
+  deleteDocument(id: string): Observable<unknown> {
     return this.http.delete(
       `${this.apiUrl}/${id}`,
+    );
+  }
+
+  /**
+   * KORAK 19 — Generisanje sumiranja dokumenta
+   */
+  generateSummary(
+    documentId: string,
+  ): Observable<DocumentSummary> {
+    return this.http.post<DocumentSummary>(
+      `${this.apiUrl}/${documentId}/summary`,
+      {
+        language: 'en',
+      },
     );
   }
 }

@@ -35,14 +35,16 @@ class SourceCitation(BaseModel):
 
 class GenerateRequest(BaseModel):
     question: str
-    organization_id: Optional[str] = None
+    organization_id: str  # 👈 Obavezno polje za multi-tenant bezbednost po organizaciji
     conversation_id: Optional[str] = None
     context: Optional[str] = ""
 
 
 class GenerateResponse(BaseModel):
-    success: bool
+    success: bool = True
     answer: str
     model: str
     sources: List[SourceCitation] = []
     tool_results: List[Dict[str, Any]] = []
+    confidence: float = 0.95
+    answered: bool = True

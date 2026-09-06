@@ -1,167 +1,3 @@
-<!-- <div class="documents-page">
-
-  <div class="page-header">
-
-    <div>
-      <h1>Documents</h1>
-
-      <p>
-        Manage your organization's documents.
-      </p>
-    </div>
-
-    <div>
-
-      <input
-        #fileInput
-        type="file"
-        accept="application/pdf,.pdf"
-        hidden
-        (change)="onFileSelected($event)"
-      />
-
-      <button
-        type="button"
-        (click)="fileInput.click()"
-        [disabled]="uploading"
-      >
-        {{
-          uploading
-            ? 'Uploading...'
-            : 'Upload PDF'
-        }}
-      </button>
-
-    </div>
-
-  </div>
-
-
-  @if (successMessage) {
-    <div class="success-message">
-      {{ successMessage }}
-    </div>
-  }
-
-
-  @if (errorMessage) {
-    <div class="error-message">
-      {{ errorMessage }}
-    </div>
-  }
-
-
-  <div class="documents-card">
-
-    @if (loading) {
-
-      <div class="empty-state">
-        Loading documents...
-      </div>
-
-    } @else if (documents.length === 0) {
-
-      <div class="empty-state">
-
-        <h3>No documents yet</h3>
-
-        <p>
-          Upload your first PDF document.
-        </p>
-
-      </div>
-
-    } @else {
-
-      <table>
-
-        <thead>
-
-          <tr>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Size</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          @for (
-            document of documents;
-            track document.id
-          ) {
-
-            <tr>
-
-              <td>
-                {{ document.originalName }}
-              </td>
-
-              <td>
-
-                <span
-                  class="status"
-                  [class.status-ready]="
-                    document.status === 'READY'
-                  "
-                  [class.status-processing]="
-                    document.status === 'PROCESSING'
-                  "
-                  [class.status-failed]="
-                    document.status === 'FAILED'
-                  "
-                >
-                  {{ document.status }}
-                </span>
-
-              </td>
-
-              <td>
-                {{
-                  formatFileSize(
-                    document.size
-                  )
-                }}
-              </td>
-
-              <td>
-                {{
-                  document.createdAt
-                    | date:'dd.MM.yyyy HH:mm'
-                }}
-              </td>
-
-              <td>
-
-                <button
-                  type="button"
-                  class="delete-button"
-                  (click)="
-                    deleteDocument(document)
-                  "
-                >
-                  Delete
-                </button>
-
-              </td>
-
-            </tr>
-
-          }
-
-        </tbody>
-
-      </table>
-
-    }
-
-  </div>
-
-</div> -->
-
 <div class="documents-page">
 
   <div class="page-header">
@@ -304,6 +140,14 @@
               <td>
 
                 <button
+                  mat-stroked-button
+                  [disabled]="document.status !== 'READY'"
+                  (click)="generateSummary(document.id)"
+                >
+                  Generate summary
+                </button>
+
+                <button
                   type="button"
                   class="delete-button"
                   (click)="
@@ -324,6 +168,104 @@
       </table>
 
     }
+
+  </div>
+
+
+  <!-- DAN 82 — SUMMARY PANEL / LOADING / ERROR -->
+
+  <div
+    *ngIf="summaryLoading"
+    class="summary-loading"
+  >
+    Generating summary...
+  </div>
+
+
+  <div
+    *ngIf="summaryError"
+    class="summary-error"
+  >
+    {{ summaryError }}
+  </div>
+
+
+  <div
+    *ngIf="selectedSummary"
+    class="summary-panel"
+  >
+
+    <h2>
+      Summary
+    </h2>
+
+    <p>
+      {{ selectedSummary.summary }}
+    </p>
+
+
+    <h3>
+      Key points
+    </h3>
+
+    <ul>
+      <li
+        *ngFor="
+          let point
+          of selectedSummary.key_points
+        "
+      >
+        {{ point }}
+      </li>
+    </ul>
+
+
+    <h3>
+      Products
+    </h3>
+
+    <ul>
+      <li
+        *ngFor="
+          let product
+          of selectedSummary.products
+        "
+      >
+        {{ product }}
+      </li>
+    </ul>
+
+
+    <h3>
+      Prices
+    </h3>
+
+    <ul>
+      <li
+        *ngFor="
+          let price
+          of selectedSummary.prices
+        "
+      >
+        {{ price }}
+      </li>
+    </ul>
+
+
+    <h3>
+      Important conditions
+    </h3>
+
+    <ul>
+      <li
+        *ngFor="
+          let condition
+          of selectedSummary.important_conditions
+        "
+      >
+        {{ condition }}
+      </li>
+    </ul>
 
   </div>
 

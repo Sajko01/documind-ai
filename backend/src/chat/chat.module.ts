@@ -42,6 +42,8 @@ import { ProductsModule } from '../products/products.module';
 import { ProductToolsService } from './tools/product-tools.service';
 import { OffersModule } from 'src/offers/offers.module';
 import { OfferToolsService } from './tools/offer-tools.service';
+import { AnalyticsModule } from 'src/analytics/analytics.module';
+import { UnansweredQuestionsModule } from 'src/unanswered-questions/unanswered-questions.module';
 
 @Module({
   imports: [
@@ -51,9 +53,12 @@ import { OfferToolsService } from './tools/offer-tools.service';
       DocumentChunk,
       ProductsModule,
       OffersModule,
+      UnansweredQuestionsModule,
     ]),
     HttpModule,
     ProductsModule, // Dodato iz 70.5
+    AnalyticsModule,
+    UnansweredQuestionsModule,
 
     forwardRef(() => OffersModule),
   ],

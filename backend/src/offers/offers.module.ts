@@ -6,6 +6,7 @@ import { Offer } from './entities/offer.entity';
 import { OfferItem } from './entities/offer-item.entity';
 import { ProductsModule } from 'src/products/products.module';
 import { ChatModule } from 'src/chat/chat.module';
+import { AnalyticsModule } from 'src/analytics/analytics.module';
 
 
 
@@ -17,11 +18,12 @@ import { ChatModule } from 'src/chat/chat.module';
       OfferItem,
     ]),
     forwardRef(() => ChatModule),
+    AnalyticsModule,
 
     ProductsModule,
   ],
   controllers: [OffersController],
   providers: [OffersService],
-  exports: [OffersService],
+  exports: [OffersService, TypeOrmModule],
 })
 export class OffersModule {}
