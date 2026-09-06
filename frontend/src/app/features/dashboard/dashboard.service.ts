@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { UnansweredQuestion } from '../unanswered-questions/unanswered-question.model';
+import { UnansweredQuestion } from '../unanswered-questions/unanswered-questions.model';
 
 export interface DashboardMetrics {
   totalUsers: number;

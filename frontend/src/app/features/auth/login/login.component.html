@@ -1,46 +1,58 @@
 <div class="auth-page">
-
   <div class="auth-card">
-
-    <h1>DocuMind AI</h1>
-
-    <p class="subtitle">
-      Sign in to your account
-    </p>
-
-    <form>
-
-      <div class="form-group">
-        <label>Email</label>
-
-        <input
-          type="email"
-          placeholder="you@company.com"
-        />
-      </div>
-
-      <div class="form-group">
-        <label>Password</label>
-
-        <input
-          type="password"
-          placeholder="••••••••"
-        />
-      </div>
-
-      <button type="submit">
-        Login
+    
+    @if (user$ | async; as user) {
+      <!-- Ako JE ulogovan, prikaži ovo umesto forme -->
+      <h1>DocuMind AI</h1>
+      <p class="subtitle">Već ste prijavljeni kao <strong>{{ user.email }}</strong></p>
+      
+      <button type="button" (click)="logout()" class="logout-btn">
+        Odjavi se
       </button>
 
-    </form>
+      <div style="margin-top: 20px; text-align: center;">
+        <a routerLink="/dashboard" style="color: #4f46e5; text-decoration: none; font-weight: 600;">
+          Idi na Dashboard &rarr;
+        </a>
+      </div>
+    } @else {
+      <!-- Ako NIJE ulogovan, prikaži standardnu login formu -->
+      <h1>DocuMind AI</h1>
+      <p class="subtitle">Sign in to your account</p>
 
-    <p class="register-link">
-      Don't have an account?
-      <a routerLink="/register">
-        Create account
-      </a>
-    </p>
+      <form [formGroup]="loginForm" (ngSubmit)="login()">
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            placeholder="you@company.com"
+            formControlName="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            formControlName="password"
+          />
+        </div>
+
+        <button type="submit" [disabled]="loading">
+          {{ loading ? 'Signing in...' : 'Login' }}
+        </button>
+
+        @if (errorMessage) {
+          <p class="error-text">{{ errorMessage }}</p>
+        }
+      </form>
+
+      <p class="register-link">
+        Don't have an account?
+        <a routerLink="/register">Create account</a>
+      </p>
+    }
 
   </div>
-
 </div>

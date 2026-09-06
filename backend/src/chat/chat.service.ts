@@ -121,449 +121,9 @@ export class ChatService {
     return conversation;
   }
 
-//   async sendMessage(
-//     organizationId: string,
-//     userId: string,
-//     dto: SendMessageDto,
-//   ) {
-//     let conversation: Conversation | null = null;
 
-//     if (dto.conversationId) {
-//       conversation = await this.conversationRepository.findOne({
-//         where: { id: dto.conversationId },
-//       });
 
-//       if (!conversation) {
-//         throw new NotFoundException('Conversation not found');
-//       }
 
-//       if (conversation.organizationId !== organizationId) {
-//         throw new ForbiddenException('You cannot access this conversation');
-//       }
-//     } else {
-//       conversation = await this.createConversation(
-//         organizationId,
-//         userId,
-//         dto.message.substring(0, 50),
-//       );
-//     }
-
-//     // 1. Sačuvaj korisničku poruku
-//     const userMessage = this.messageRepository.create({
-//       conversationId: conversation.id,
-//       role: MessageRole.USER,
-//       content: dto.message,
-//       sources: null,
-//     });
-//     await this.messageRepository.save(userMessage);
-
-//     // 2. Pretraga dokumenata iz baze sa striktnom organizacionom izolacijom (DAN 62)
-//     const chunks = await this.documentChunkRepository.find({
-//       where: {
-//         document: {
-//           organizationId,
-//         },
-//       },
-//       relations: { document: true },
-//       take: 5,
-//     });
-
-//     // Mapiranje rezultata na AiSearchResult interfejs
-  
-//     const searchResults: AiSearchResult[] = chunks.map((chunk) => ({
-//     document_id: chunk.document?.id || '',
-//     filename: chunk.document?.originalName || chunk.document?.filename || 'unknown_document', // 👈 Popravlja Grešku 2
-//     page: chunk.pageNumber,
-//     content: chunk.content,
-//     score: 0.89,
-// }));
-//     // Formiranje verifikovanih izvora za frontend
-//     const sources: SourceCitation[] = searchResults.map((result) => ({
-//       documentId: result.document_id,
-//       document: result.filename,
-//       page: result.page,
-//       score: result.score,
-//     }));
-
-//     // Pristup strukturiranom kontekstu sa [Source N] oznakama (DAN 63)
-//     const context = this.buildContext(searchResults);
-
-//     // 3. Poziv ka FastAPI /generate endpointu
-//     const generateUrl = this.getAiServiceEndpoint('generate');
-//     let answer = '';
-
-//     try {
-//       const generationResponse = await firstValueFrom(
-//         this.httpService.post<AiGenerationResponse>(
-//           generateUrl,
-//           {
-//             question: dto.message,
-//             context: context,
-//             organization_id: organizationId, // ✅ DODATO: Pravi UUID organizacije
-//             conversation_id: conversation.id, // ✅ DODATO: ID trenutne konverzacije
-//           },
-//         ),
-//       );
-
-//       answer = generationResponse.data.answer || '';
-//     } catch (error: any) {
-//       console.error(' [AI GENERATE ERROR]:', error?.response?.data || error?.message || error);
-//       throw new Error(`AI Generation service failed: ${error?.message}`);
-//     }
-
-//     // 4. Sačuvaj poruku asistenta sa verifikovanim izvorima
-//     const assistantMessage = this.messageRepository.create({
-//       conversationId: conversation.id,
-//       role: MessageRole.ASSISTANT,
-//       content: answer,
-//       sources,
-//     });
-
-//     await this.messageRepository.save(assistantMessage);
-
-//     return {
-//       conversationId: conversation.id,
-//       userMessage: {
-//         id: userMessage.id,
-//         content: userMessage.content,
-//       },
-//       assistantMessage: {
-//         id: assistantMessage.id,
-//         content: answer,
-//         sources,
-//       },
-//     };
-//   }
-
-// async sendMessage(
-//     organizationId: string,
-//     userId: string,
-//     dto: SendMessageDto,
-//   ) {
-//     // ⏱️ 1. Započni merenje vremena za analitiku
-//     const startTime = Date.now();
-
-//     let conversation: Conversation | null = null;
-
-//     if (dto.conversationId) {
-//       conversation = await this.conversationRepository.findOne({
-//         where: { id: dto.conversationId },
-//       });
-
-//       if (!conversation) {
-//         throw new NotFoundException('Conversation not found');
-//       }
-
-//       if (conversation.organizationId !== organizationId) {
-//         throw new ForbiddenException('You cannot access this conversation');
-//       }
-//     } else {
-//       conversation = await this.createConversation(
-//         organizationId,
-//         userId,
-//         dto.message.substring(0, 50),
-//       );
-//     }
-
-//     // 1. Sačuvaj korisničku poruku
-//     const userMessage = this.messageRepository.create({
-//       conversationId: conversation.id,
-//       role: MessageRole.USER,
-//       content: dto.message,
-//       sources: null,
-//     });
-//     await this.messageRepository.save(userMessage);
-
-//     // 2. Pretraga dokumenata iz baze sa striktnom organizacionom izolacijom (DAN 62)
-//     const chunks = await this.documentChunkRepository.find({
-//       where: {
-//         document: {
-//           organizationId,
-//         },
-//       },
-//       relations: { document: true },
-//       take: 5,
-//     });
-
-//     // Mapiranje rezultata na AiSearchResult interfejs
-//     const searchResults: AiSearchResult[] = chunks.map((chunk) => ({
-//       document_id: chunk.document?.id || '',
-//       filename: chunk.document?.originalName || chunk.document?.filename || 'unknown_document',
-//       page: chunk.pageNumber,
-//       content: chunk.content,
-//       score: 0.89, // ili stvarni score ako ga imaš u bazi, npr. chunk.score
-//     }));
-
-//     // Formiranje verifikovanih izvora za frontend
-//     const sources: SourceCitation[] = searchResults.map((result) => ({
-//       documentId: result.document_id,
-//       document: result.filename,
-//       page: result.page,
-//       score: result.score,
-//     }));
-
-//     // Pristup strukturiranom kontekstu sa [Source N] oznakama (DAN 63)
-//     const context = this.buildContext(searchResults);
-
-//     // 3. Poziv ka FastAPI /generate endpointu
-//     const generateUrl = this.getAiServiceEndpoint('generate');
-//     let answer = '';
-
-//     try {
-//       const generationResponse = await firstValueFrom(
-//         this.httpService.post<AiGenerationResponse>(
-//           generateUrl,
-//           {
-//             question: dto.message,
-//             context: context,
-//             organization_id: organizationId,
-//             conversation_id: conversation.id,
-//           },
-//         ),
-//       );
-
-//       answer = generationResponse.data.answer || '';
-//     } catch (error: any) {
-//       console.error(' [AI GENERATE ERROR]:', error?.response?.data || error?.message || error);
-//       throw new Error(`AI Generation service failed: ${error?.message}`);
-//     }
-
-//     // 4. Sačuvaj poruku asistenta sa verifikovanim izvorima
-//     const assistantMessage = this.messageRepository.create({
-//       conversationId: conversation.id,
-//       role: MessageRole.ASSISTANT,
-//       content: answer,
-//       sources,
-//     });
-
-//     await this.messageRepository.save(assistantMessage);
-
-//     // ⏱️ 📊 Izračunavanje metrika za analitiku
-//     const responseTimeMs = Date.now() - startTime;
-
-//     const averageRetrievalScore =
-//       searchResults && searchResults.length
-//         ? searchResults.reduce(
-//             (sum, result) => sum + (result.score || 0),
-//             0,
-//           ) / searchResults.length
-//         : undefined;
-
-//     // 📊 Logovanje event-a da je postavljeno pitanje
-//     await this.analyticsService.trackEvent({
-//       organizationId: organizationId,
-//       userId: userId,
-//       eventType: AnalyticsEventType.QUESTION_ASKED,
-//       conversationId: conversation.id,
-//       responseTimeMs: responseTimeMs,
-//       retrievalScore: averageRetrievalScore,
-//       metadata: {
-//         question: dto.message,
-//         topK: 5,
-//         retrievedDocuments: searchResults.map(result => ({
-//           documentId: result.document_id,
-//           filename: result.filename,
-//           page: result.page,
-//         })),
-//       },
-//     });
-
-//     return {
-//       conversationId: conversation.id,
-//       userMessage: {
-//         id: userMessage.id,
-//         content: userMessage.content,
-//       },
-//       assistantMessage: {
-//         id: assistantMessage.id,
-//         content: answer,
-//         sources,
-//       },
-//     };
-//   }
-
-// async sendMessage(
-//     organizationId: string,
-//     userId: string,
-//     dto: SendMessageDto,
-//   ) {
-//     // ⏱️ 1. Započni merenje vremena za analitiku
-//     const startTime = Date.now();
-
-//     let conversation: Conversation | null = null;
-
-//     if (dto.conversationId) {
-//       conversation = await this.conversationRepository.findOne({
-//         where: { id: dto.conversationId },
-//       });
-
-//       if (!conversation) {
-//         throw new NotFoundException('Conversation not found');
-//       }
-
-//       if (conversation.organizationId !== organizationId) {
-//         throw new ForbiddenException('You cannot access this conversation');
-//       }
-//     } else {
-//       conversation = await this.createConversation(
-//         organizationId,
-//         userId,
-//         dto.message.substring(0, 50),
-//       );
-//     }
-
-//     // 1. Sačuvaj korisničku poruku
-//     const userMessage = this.messageRepository.create({
-//       conversationId: conversation.id,
-//       role: MessageRole.USER,
-//       content: dto.message,
-//       sources: null,
-//     });
-//     await this.messageRepository.save(userMessage);
-
-//     // 2. Pretraga dokumenata iz baze sa striktnom organizacionom izolacijom (DAN 62)
-//     const chunks = await this.documentChunkRepository.find({
-//       where: {
-//         document: {
-//           organizationId,
-//         },
-//       },
-//       relations: { document: true },
-//       take: 5,
-//     });
-
-//     // Mapiranje rezultata na AiSearchResult interfejs
-//     const searchResults: AiSearchResult[] = chunks.map((chunk) => ({
-//       document_id: chunk.document?.id || '',
-//       filename: chunk.document?.originalName || chunk.document?.filename || 'unknown_document',
-//       page: chunk.pageNumber,
-//       content: chunk.content,
-//       score: 0.89, // ili stvarni score ako ga imaš u bazi, npr. chunk.score
-//     }));
-
-//     // Formiranje verifikovanih izvora za frontend
-//     const sources: SourceCitation[] = searchResults.map((result) => ({
-//       documentId: result.document_id,
-//       document: result.filename,
-//       page: result.page,
-//       score: result.score,
-//     }));
-
-//     // Pristup strukturiranom kontekstu sa [Source N] oznakama (DAN 63)
-//     const context = this.buildContext(searchResults);
-
-//     // 3. Poziv ka FastAPI /generate endpointu
-//     const generateUrl = this.getAiServiceEndpoint('generate');
-//     let answer = '';
-//     let confidence = 0;
-//     let answered = true;
-
-//     try {
-//       const generationResponse = await firstValueFrom(
-//         this.httpService.post<AiGenerationResponse>(
-//           generateUrl,
-//           {
-//             question: dto.message,
-//             context: context,
-//             organization_id: organizationId,
-//             conversation_id: conversation.id,
-//           },
-//         ),
-//       );
-
-//       answer = generationResponse.data.answer || '';
-//       confidence = generationResponse.data.confidence ?? 0;
-//       answered = generationResponse.data.answered ?? true;
-//     } catch (error: any) {
-//       console.error(' [AI GENERATE ERROR]:', error?.response?.data || error?.message || error);
-//       throw new Error(`AI Generation service failed: ${error?.message}`);
-//     }
-
-//     // 4. Sačuvaj poruku asistenta sa verifikovanim izvorima i pragovima
-//     const assistantMessage = this.messageRepository.create({
-//       conversationId: conversation.id,
-//       role: MessageRole.ASSISTANT,
-//       content: answer,
-//       sources,
-//       confidence,
-//       answered,
-//     });
-
-//     await this.messageRepository.save(assistantMessage);
-
-//     // 5. Ako AI nije mogao pouzdano da odgovori, evidentiramo ga kao neodgovoreno pitanje
-//     if (!answered) {
-//       await this.unansweredQuestionsService.create(
-//         organizationId,
-//         userId,
-//         {
-//           question: dto.message,
-//           confidence: confidence,
-//           conversationId: conversation.id,
-//           messageId: assistantMessage.id,
-//         },
-//       );
-//       // 📊 Track event za neodgovoreno pitanje
-//       await this.analyticsService.trackEvent({
-//         organizationId: organizationId,
-//         userId: userId,
-//         eventType: AnalyticsEventType.UNANSWERED_QUESTION,
-//         conversationId: conversation.id,
-//         metadata: {
-//           question: dto.message,
-//           confidence: confidence,
-//           messageId: assistantMessage.id,
-//         },
-//       });
-//     }
-
-//     // ⏱️ 📊 Izračunavanje metrika za analitiku
-//     const responseTimeMs = Date.now() - startTime;
-
-//     const averageRetrievalScore =
-//       searchResults && searchResults.length
-//         ? searchResults.reduce(
-//             (sum, result) => sum + (result.score || 0),
-//             0,
-//           ) / searchResults.length
-//         : undefined;
-
-//     // 📊 Logovanje event-a da je postavljeno pitanje
-//     await this.analyticsService.trackEvent({
-//       organizationId: organizationId,
-//       userId: userId,
-//       eventType: AnalyticsEventType.QUESTION_ASKED,
-//       conversationId: conversation.id,
-//       responseTimeMs: responseTimeMs,
-//       retrievalScore: averageRetrievalScore,
-//       metadata: {
-//         question: dto.message,
-//         topK: 5,
-//         confidence: confidence,
-//         answered: answered,
-//         retrievedDocuments: searchResults.map(result => ({
-//           documentId: result.document_id,
-//           filename: result.filename,
-//           page: result.page,
-//         })),
-//       },
-//     });
-
-//     return {
-//       conversationId: conversation.id,
-//       userMessage: {
-//         id: userMessage.id,
-//         content: userMessage.content,
-//       },
-//       assistantMessage: {
-//         id: assistantMessage.id,
-//         content: answer,
-//         sources,
-//         confidence,
-//         answered,
-//       },
-//     };
-//   }
 // async sendMessage(
 //   organizationId: string,
 //   userId: string,
@@ -575,9 +135,16 @@ export class ChatService {
 //   let conversation: Conversation | null = null;
 
 //   if (dto.conversationId) {
-//     conversation = await this.conversationRepository.findOne({
-//       where: { id: dto.conversationId },
-//     });
+//   //   conversation = await this.conversationRepository.findOne({
+//   //     where: { id: dto.conversationId },
+//   //   });
+
+//   conversation = await this.conversationRepository.findOne({
+//   where: { 
+//     id: dto.conversationId, 
+//     organizationId: organizationId // ✅ Dodato da spreči curenje između tenanta
+//   },
+// });
 
 //     if (!conversation) {
 //       throw new NotFoundException('Conversation not found');
@@ -614,6 +181,10 @@ export class ChatService {
 //     take: 5,
 //   });
 
+//   if (!chunks || chunks.length === 0) {
+//     console.warn(`[sendMessage] Nisu pronađeni čunkovi za organizationId: ${organizationId}`);
+//   }
+
 //   // Mapiranje rezultata na AiSearchResult interfejs
 //   const searchResults: AiSearchResult[] = chunks.map((chunk) => ({
 //     document_id: chunk.document?.id || '',
@@ -640,24 +211,36 @@ export class ChatService {
 //   let confidence = 0;
 //   let answered = false;
 
+//   const payload = {
+//     question: dto.message,
+//     context: context || '',
+//     organization_id: organizationId,
+//     conversation_id: conversation.id,
+//   };
+
+//   console.log(`[sendMessage] Šaljem zahtev na AI servis: ${generateUrl}`, JSON.stringify(payload));
+
 //   try {
 //     const generationResponse = await firstValueFrom(
 //       this.httpService.post<AiGenerationResponse>(
 //         generateUrl,
-//         {
-//           question: dto.message,
-//           context: context || '',
-//           organization_id: organizationId,
-//           conversation_id: conversation.id,
-//         },
+//         payload,
 //       ),
 //     );
+
+//     console.log('[sendMessage] Uspešan odgovor od AI servisa:', generationResponse.data);
 
 //     answer = generationResponse.data.answer || answer;
 //     confidence = generationResponse.data.confidence ?? 0;
 //     answered = generationResponse.data.answered ?? (confidence > 0.5);
 //   } catch (error: any) {
-//     console.error(' [AI GENERATE ERROR Details]:', error?.response?.data || error?.message || error);
+//     // 🔍 UNAPREĐENO DETALJNO LOGOVANJE GREŠKE
+//     const status = error?.response?.status;
+//     const errorData = error?.response?.data || error?.message || error;
+
+//     console.error(`❌ [AI GENERATE ERROR] Status: ${status || 'Unknown'}`);
+//     console.error(' [AI GENERATE ERROR Details]:', JSON.stringify(errorData, null, 2));
+
 //     // Vrednosti za answer/answered već imaju fallback iznad, pa nastavak izvršavanja ne puca!
 //   }
 
@@ -673,7 +256,7 @@ export class ChatService {
 
 //   await this.messageRepository.save(assistantMessage);
 
-//   // 5. Ako AI nije mogao pouzdano da odgovori (ili je poziv pao), evidentiramo ga kao neodgovoreno pitanje
+//   // 5. Ako AI nije mogao pouzdano da odgovorim (ili je poziv pao), evidentiramo ga kao neodgovoreno pitanje
 //   if (!answered) {
 //     await this.unansweredQuestionsService.create(
 //       organizationId,
@@ -747,7 +330,226 @@ export class ChatService {
 //     },
 //   };
 // }
+// async sendMessage(
+//   organizationId: string,
+//   userId: string,
+//   dto: SendMessageDto,
+// ) {
+//   // ⏱️ 1. Započni merenje vremena za analitiku
+//   const startTime = Date.now();
 
+//   let conversation: Conversation | null = null;
+
+//   if (dto.conversationId) {
+//     conversation = await this.conversationRepository.findOne({
+//       where: { 
+//         id: dto.conversationId, 
+//         organizationId: organizationId // ✅ Dodato da spreči curenje između tenanta
+//       },
+//     });
+
+//     if (!conversation) {
+//       throw new NotFoundException('Conversation not found');
+//     }
+
+//     if (conversation.organizationId !== organizationId) {
+//       throw new ForbiddenException('You cannot access this conversation');
+//     }
+//   } else {
+//     conversation = await this.createConversation(
+//       organizationId,
+//       userId,
+//       dto.message.substring(0, 50),
+//     );
+//   }
+
+//   // 1. Sačuvaj korisničku poruku
+//   const userMessage = this.messageRepository.create({
+//     conversationId: conversation.id,
+//     role: MessageRole.USER,
+//     content: dto.message,
+//     sources: null,
+//   });
+//   await this.messageRepository.save(userMessage);
+
+//   // 2. Pretraga dokumenata iz baze sa striktnom organizacionom izolacijom
+//   const chunks = await this.documentChunkRepository.find({
+//     where: {
+//       document: {
+//         organizationId,
+//       },
+//     },
+//     relations: { document: true },
+//     take: 5,
+//   });
+
+//   if (!chunks || chunks.length === 0) {
+//     console.warn(`[sendMessage] Nisu pronađeni čunkovi za organizationId: ${organizationId}`);
+//   }
+
+//   // Mapiranje rezultata na AiSearchResult interfejs
+//   const searchResults: AiSearchResult[] = chunks.map((chunk) => ({
+//     document_id: chunk.document?.id || '',
+//     filename: chunk.document?.originalName || chunk.document?.filename || 'unknown_document',
+//     page: chunk.pageNumber,
+//     content: chunk.content,
+//     score: 0.89,
+//   }));
+
+//   // Formiranje verifikovanih izvora za frontend
+//   const sources: SourceCitation[] = searchResults.map((result) => ({
+//     documentId: result.document_id,
+//     document: result.filename,
+//     page: result.page,
+//     score: result.score,
+//   }));
+
+//   // Pristup strukturiranom kontekstu
+//   const context = this.buildContext(searchResults);
+
+//   // 3. Poziv ka FastAPI /generate endpointu
+//   const generateUrl = this.getAiServiceEndpoint('generate');
+//   let answer = 'Trenutno nisam u mogućnosti da odgovorim na vaše pitanje. Molimo pokušajte ponovo kasnije.';
+//   let confidence = 0;
+//   let answered = false;
+
+//   const payload = {
+//     question: dto.message,
+//     context: context || '',
+//     organization_id: organizationId,
+//     conversation_id: conversation.id,
+//   };
+
+//   console.log(`[sendMessage] Šaljem zahtev na AI servis: ${generateUrl}`, JSON.stringify(payload));
+
+//   try {
+//     const generationResponse = await firstValueFrom(
+//       this.httpService.post<any>( // Možeš zameniti sa AiGenerationResponse interfejsom koji ima i .metrics
+//         generateUrl,
+//         payload,
+//       ),
+//     );
+
+//     console.log('[sendMessage] Uspešan odgovor od AI servisa:', generationResponse.data);
+
+//     answer = generationResponse.data.answer || answer;
+//     confidence = generationResponse.data.confidence ?? 0;
+//     answered = generationResponse.data.answered ?? (confidence > 0.5);
+
+//     // 📊 OBSERVABILITY - Hvatanje i ispis metrika latencije koje dolaze iz Pythona
+//     const aiMetrics = generationResponse.data.metrics;
+//     const nestTotalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+
+//     console.log(`\n--- 📊 OBSERVABILITY METRICS ---`);
+//     console.log(`Request: /api/chat/message (Total Nest Time: ${nestTotalTime}s)`);
+//     if (aiMetrics) {
+//       console.log(`AI Pipeline Total: ${aiMetrics.total}s`);
+//       console.log(`Embedding: ${aiMetrics.embedding}s`);
+//       console.log(`Retrieval & Rerank: ${aiMetrics.retrieval}s`);
+//       console.log(`LLM Generation: ${aiMetrics.llm}s`);
+//     }
+//     console.log(`-----------------------------------\n`);
+
+//   } catch (error: any) {
+//     // 🔍 UNAPREĐENO DETALJNO LOGOVANJE GREŠKE (Errors requirement)
+//     const status = error?.response?.status;
+//     const errorData = error?.response?.data || error?.message || error;
+
+//     console.error(`❌ [AI GENERATE ERROR] Status: ${status || 'Unknown'}`);
+//     console.error(' [AI GENERATE ERROR Details]:', JSON.stringify(errorData, null, 2));
+//   }
+
+//   // 4. Sačuvaj poruku asistenta sa verifikovanim izvorima
+//   const assistantMessage = this.messageRepository.create({
+//     conversationId: conversation.id,
+//     role: MessageRole.ASSISTANT,
+//     content: answer,
+//     sources,
+//     confidence,
+//     answered,
+//   });
+
+//   await this.messageRepository.save(assistantMessage);
+
+//   // 5. Ako AI nije mogao pouzdano da odgovori...
+//   if (!answered) {
+//     await this.unansweredQuestionsService.create(
+//       organizationId,
+//       userId,
+//       {
+//         question: dto.message,
+//         confidence: confidence,
+//         conversationId: conversation.id,
+//         messageId: assistantMessage.id,
+//       },
+//     );
+
+//     await this.analyticsService.trackEvent({
+//       organizationId: organizationId,
+//       userId: userId,
+//       eventType: AnalyticsEventType.UNANSWERED_QUESTION,
+//       conversationId: conversation.id,
+//       metadata: {
+//         question: dto.message,
+//         confidence: confidence,
+//         messageId: assistantMessage.id,
+//       },
+//     });
+//   }
+
+//   const responseTimeMs = Date.now() - startTime;
+
+//   const averageRetrievalScore =
+//     searchResults && searchResults.length
+//       ? searchResults.reduce(
+//           (sum, result) => sum + (result.score || 0),
+//           0,
+//         ) / searchResults.length
+//       : undefined;
+
+//   await this.analyticsService.trackEvent({
+//     organizationId: organizationId,
+//     userId: userId,
+//     eventType: AnalyticsEventType.QUESTION_ASKED,
+//     conversationId: conversation.id,
+//     responseTimeMs: responseTimeMs,
+//     retrievalScore: averageRetrievalScore,
+//     metadata: {
+//       question: dto.message,
+//       topK: 5,
+//       confidence: confidence,
+//       answered: answered,
+//       retrievedDocuments: searchResults.map((result) => ({
+//         documentId: result.document_id,
+//         filename: result.filename,
+//         page: result.page,
+//       })),
+//     },
+//   });
+
+//   return {
+//     conversationId: conversation.id,
+//     userMessage: {
+//       id: userMessage.id,
+//       content: userMessage.content,
+//     },
+//     assistantMessage: {
+//       id: assistantMessage.id,
+//       content: answer,
+//       sources,
+//       confidence,
+//       answered,
+//     },
+
+//     // 👉 DODAJ OVO OVDJE:
+//     metrics: aiMetrics ? {
+//       totalTime: aiMetrics.total,
+//       embeddingTime: aiMetrics.embedding,
+//       retrievalTime: aiMetrics.retrieval,
+//       llmTime: aiMetrics.llm,
+//     } : null
+//   };
+// }
 
 async sendMessage(
   organizationId: string,
@@ -761,7 +563,10 @@ async sendMessage(
 
   if (dto.conversationId) {
     conversation = await this.conversationRepository.findOne({
-      where: { id: dto.conversationId },
+      where: { 
+        id: dto.conversationId, 
+        organizationId: organizationId // ✅ Dodato da spreči curenje između tenanta
+      },
     });
 
     if (!conversation) {
@@ -828,6 +633,9 @@ async sendMessage(
   let answer = 'Trenutno nisam u mogućnosti da odgovorim na vaše pitanje. Molimo pokušajte ponovo kasnije.';
   let confidence = 0;
   let answered = false;
+  
+  // 👉 Deklarisano ovde da bude dostupno u celoj funkciji
+  let aiMetrics: any = null;
 
   const payload = {
     question: dto.message,
@@ -840,7 +648,7 @@ async sendMessage(
 
   try {
     const generationResponse = await firstValueFrom(
-      this.httpService.post<AiGenerationResponse>(
+      this.httpService.post<any>(
         generateUrl,
         payload,
       ),
@@ -851,15 +659,27 @@ async sendMessage(
     answer = generationResponse.data.answer || answer;
     confidence = generationResponse.data.confidence ?? 0;
     answered = generationResponse.data.answered ?? (confidence > 0.5);
+
+    // 📊 Dodela vrednosti metrika iz odgovora
+    aiMetrics = generationResponse.data.metrics;
+    const nestTotalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+
+    console.log(`\n--- 📊 OBSERVABILITY METRICS ---`);
+    console.log(`Request: /api/chat/message (Total Nest Time: ${nestTotalTime}s)`);
+    if (aiMetrics) {
+      console.log(`AI Pipeline Total: ${aiMetrics.total}s`);
+      console.log(`Embedding: ${aiMetrics.embedding}s`);
+      console.log(`Retrieval & Rerank: ${aiMetrics.retrieval}s`);
+      console.log(`LLM Generation: ${aiMetrics.llm}s`);
+    }
+    console.log(`-----------------------------------\n`);
+
   } catch (error: any) {
-    // 🔍 UNAPREĐENO DETALJNO LOGOVANJE GREŠKE
     const status = error?.response?.status;
     const errorData = error?.response?.data || error?.message || error;
 
     console.error(`❌ [AI GENERATE ERROR] Status: ${status || 'Unknown'}`);
     console.error(' [AI GENERATE ERROR Details]:', JSON.stringify(errorData, null, 2));
-
-    // Vrednosti za answer/answered već imaju fallback iznad, pa nastavak izvršavanja ne puca!
   }
 
   // 4. Sačuvaj poruku asistenta sa verifikovanim izvorima
@@ -874,7 +694,7 @@ async sendMessage(
 
   await this.messageRepository.save(assistantMessage);
 
-  // 5. Ako AI nije mogao pouzdano da odgovorim (ili je poziv pao), evidentiramo ga kao neodgovoreno pitanje
+  // 5. Ako AI nije mogao pouzdano da odgovori...
   if (!answered) {
     await this.unansweredQuestionsService.create(
       organizationId,
@@ -887,7 +707,6 @@ async sendMessage(
       },
     );
 
-    // 📊 Track event za neodgovoreno pitanje
     await this.analyticsService.trackEvent({
       organizationId: organizationId,
       userId: userId,
@@ -901,7 +720,6 @@ async sendMessage(
     });
   }
 
-  // ⏱️ 📊 Izračunavanje metrika za analitiku
   const responseTimeMs = Date.now() - startTime;
 
   const averageRetrievalScore =
@@ -912,7 +730,6 @@ async sendMessage(
         ) / searchResults.length
       : undefined;
 
-  // 📊 Logovanje event-a da je postavljeno pitanje
   await this.analyticsService.trackEvent({
     organizationId: organizationId,
     userId: userId,
@@ -933,7 +750,7 @@ async sendMessage(
     },
   });
 
-  return {
+   return {
     conversationId: conversation.id,
     userMessage: {
       id: userMessage.id,
@@ -945,9 +762,25 @@ async sendMessage(
       sources,
       confidence,
       answered,
+      // 👉 OVDE DODAJEMO METRIKE DA BUDU UNUTAR PORUKE ASISTENTA
+      metrics: aiMetrics ? {
+        totalTime: aiMetrics.total,
+        embeddingTime: aiMetrics.embedding,
+        retrievalTime: aiMetrics.retrieval,
+        llmTime: aiMetrics.llm,
+      } : null
     },
+    // Možeš ostaviti i ovde na root-u ako ti negde drugo treba, ali zbog frontenda je ključno gore
+    metrics: aiMetrics ? {
+      totalTime: aiMetrics.total,
+      embeddingTime: aiMetrics.embedding,
+      retrievalTime: aiMetrics.retrieval,
+      llmTime: aiMetrics.llm,
+    } : null
   };
 }
+
+
   private buildContext(results: AiSearchResult[]): string {
     return results
       .map(

@@ -55,7 +55,7 @@ export class SummarizationService {
     this.aiServiceUrl =
       this.configService.get<string>(
         'AI_SERVICE_URL',
-      ) || 'http://localhost:8001';
+      ) || 'http://localhost:8000';
   }
 
 

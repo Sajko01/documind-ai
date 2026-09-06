@@ -1,159 +1,87 @@
 <div class="offers-page">
 
-  <div class="page-header">
-
+  <!-- PAGE HEADER -->
+  <header class="page-header">
     <div>
       <h1>Offers</h1>
-
-      <p>
-        Manage customer offers
-      </p>
+      <p>Manage customer offers</p>
     </div>
 
     <button
       mat-raised-button
       color="primary"
+      class="upload-btn"
     >
       + New Offer
     </button>
+  </header>
 
+  <!-- OFFERS TABLE CARD -->
+  <div class="offers-card">
+    @if (loading) {
+      <div class="empty-state">
+        <div class="spinner"></div>
+        <p>Loading offers...</p>
+      </div>
+    } @else if (offers.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">🏷️</span>
+        <h3>No offers yet</h3>
+        <p>Create your first offer to get started.</p>
+      </div>
+    } @else {
+      <div class="table-container">
+        <table
+          mat-table
+          [dataSource]="offers"
+          class="offers-table"
+        >
+
+          <ng-container matColumnDef="offerNumber">
+            <th mat-header-cell *matHeaderCellDef> Offer </th>
+            <td mat-cell *matCellDef="let offer" class="doc-name">
+              <span class="file-icon">📄</span>
+              {{ offer.offerNumber }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="customerName">
+            <th mat-header-cell *matHeaderCellDef> Customer </th>
+            <td mat-cell *matCellDef="let offer"> {{ offer.customerName }} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef> Total </th>
+            <td mat-cell *matCellDef="let offer">
+              <strong>{{ offer.total }} {{ offer.currency }}</strong>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> Status </th>
+            <td mat-cell *matCellDef="let offer">
+              <span
+                class="status"
+                [class.status-ready]="offer.status === 'READY' || offer.status === 'APPROVED'"
+                [class.status-uploaded]="offer.status === 'PENDING' || offer.status === 'DRAFT'"
+                [class.status-failed]="offer.status === 'REJECTED' || offer.status === 'CANCELLED'"
+              >
+                {{ offer.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="createdAt">
+            <th mat-header-cell *matHeaderCellDef> Created </th>
+            <td mat-cell *matCellDef="let offer"> {{ offer.createdAt | date:'dd.MM.yyyy HH:mm' }} </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        </table>
+      </div>
+    }
   </div>
-
-
-  <div
-    *ngIf="loading"
-    class="loading"
-  >
-    Loading offers...
-  </div>
-
-
-  <table
-    *ngIf="!loading"
-    mat-table
-    [dataSource]="offers"
-    class="offers-table"
-  >
-
-    <ng-container
-      matColumnDef="offerNumber"
-    >
-
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-      >
-        Offer
-      </th>
-
-      <td
-        mat-cell
-        *matCellDef="let offer"
-      >
-        {{ offer.offerNumber }}
-      </td>
-
-    </ng-container>
-
-
-    <ng-container
-      matColumnDef="customerName"
-    >
-
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-      >
-        Customer
-      </th>
-
-      <td
-        mat-cell
-        *matCellDef="let offer"
-      >
-        {{ offer.customerName }}
-      </td>
-
-    </ng-container>
-
-
-    <ng-container
-      matColumnDef="total"
-    >
-
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-      >
-        Total
-      </th>
-
-      <td
-        mat-cell
-        *matCellDef="let offer"
-      >
-        {{ offer.total }}
-        {{ offer.currency }}
-      </td>
-
-    </ng-container>
-
-
-    <ng-container
-      matColumnDef="status"
-    >
-
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-      >
-        Status
-      </th>
-
-      <td
-        mat-cell
-        *matCellDef="let offer"
-      >
-        {{ offer.status }}
-      </td>
-
-    </ng-container>
-
-
-    <ng-container
-      matColumnDef="createdAt"
-    >
-
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-      >
-        Created
-      </th>
-
-      <td
-        mat-cell
-        *matCellDef="let offer"
-      >
-        {{ offer.createdAt | date }}
-      </td>
-
-    </ng-container>
-
-
-    <tr
-      mat-header-row
-      *matHeaderRowDef="displayedColumns"
-    ></tr>
-
-    <tr
-      mat-row
-      *matRowDef="
-        let row;
-        columns: displayedColumns;
-      "
-    ></tr>
-
-  </table>
 
 </div>

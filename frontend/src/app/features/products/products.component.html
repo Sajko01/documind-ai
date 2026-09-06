@@ -1,215 +1,230 @@
 <div class="products-page">
 
-  <div class="page-header">
+  <!-- PAGE HEADER -->
+  <header class="page-header">
     <div>
       <h1>Products</h1>
       <p>Manage products for your organization.</p>
     </div>
 
-    <button type="button" class="primary-button">
+    <button type="button" class="action-btn primary-btn">
       + Add Product
     </button>
+  </header>
+
+  <!-- FILTERS CARD -->
+  <div class="filters-card">
+    <div class="filters">
+      <input
+        type="text"
+        placeholder="Search products..."
+        [(ngModel)]="search"
+        (keyup.enter)="loadProducts()"
+      />
+
+      <input
+        type="text"
+        placeholder="SKU"
+        [(ngModel)]="sku"
+        (keyup.enter)="loadProducts()"
+      />
+
+      <input
+        type="text"
+        placeholder="Category"
+        [(ngModel)]="category"
+        (keyup.enter)="loadProducts()"
+      />
+
+      <input
+        type="number"
+        placeholder="Min price"
+        [(ngModel)]="minPrice"
+      />
+
+      <input
+        type="number"
+        placeholder="Max price"
+        [(ngModel)]="maxPrice"
+      />
+
+      <input
+        type="number"
+        placeholder="Min stock"
+        [(ngModel)]="minStock"
+      />
+
+      <input
+        type="number"
+        placeholder="Max stock"
+        [(ngModel)]="maxStock"
+      />
+
+      <div class="filter-actions">
+        <button
+          type="button"
+          class="action-btn primary-btn"
+          (click)="loadProducts()"
+        >
+          Search
+        </button>
+
+        <button
+          type="button"
+          class="action-btn secondary-btn"
+          (click)="resetFilters()"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Search & Filter UI (DAN 68) -->
-  <div class="filters">
-    <input
-      type="text"
-      placeholder="Search products..."
-      [(ngModel)]="search"
-      (keyup.enter)="loadProducts()"
-    />
+  <!-- PRODUCTS TABLE CARD -->
+  <div class="products-card">
+    @if (loading) {
+      <div class="empty-state">
+        <div class="spinner"></div>
+        <p>Loading products...</p>
+      </div>
+    } @else if (error) {
+      <div class="error-message">
+        {{ error }}
+      </div>
+    } @else if (products.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📦</span>
+        <h3>No products found</h3>
+        <p>Try adjusting your search or filter criteria.</p>
+      </div>
+    } @else {
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <button type="button" class="sort-button" (click)="sort('sku')">
+                  SKU
+                  <span *ngIf="sortBy === 'sku'">
+                    {{ sortOrder === 'ASC' ? '↑' : '↓' }}
+                  </span>
+                </button>
+              </th>
 
-    <input
-      type="text"
-      placeholder="SKU"
-      [(ngModel)]="sku"
-      (keyup.enter)="loadProducts()"
-    />
+              <th>
+                <button type="button" class="sort-button" (click)="sort('name')">
+                  Name
+                  <span *ngIf="sortBy === 'name'">
+                    {{ sortOrder === 'ASC' ? '↑' : '↓' }}
+                  </span>
+                </button>
+              </th>
 
-    <input
-      type="text"
-      placeholder="Category"
-      [(ngModel)]="category"
-      (keyup.enter)="loadProducts()"
-    />
+              <th>
+                <button type="button" class="sort-button" (click)="sort('category')">
+                  Category
+                  <span *ngIf="sortBy === 'category'">
+                    {{ sortOrder === 'ASC' ? '↑' : '↓' }}
+                  </span>
+                </button>
+              </th>
 
-    <input
-      type="number"
-      placeholder="Min price"
-      [(ngModel)]="minPrice"
-    />
+              <th>
+                <button type="button" class="sort-button" (click)="sort('price')">
+                  Price
+                  <span *ngIf="sortBy === 'price'">
+                    {{ sortOrder === 'ASC' ? '↑' : '↓' }}
+                  </span>
+                </button>
+              </th>
 
-    <input
-      type="number"
-      placeholder="Max price"
-      [(ngModel)]="maxPrice"
-    />
+              <th>
+                <button type="button" class="sort-button" (click)="sort('stock')">
+                  Stock
+                  <span *ngIf="sortBy === 'stock'">
+                    {{ sortOrder === 'ASC' ? '↑' : '↓' }}
+                  </span>
+                </button>
+              </th>
 
-    <input
-      type="number"
-      placeholder="Min stock"
-      [(ngModel)]="minStock"
-    />
+              <th>Unit</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
 
-    <input
-      type="number"
-      placeholder="Max stock"
-      [(ngModel)]="maxStock"
-    />
+          <tbody>
+            <tr *ngFor="let product of products">
+              <td class="product-sku">{{ product.sku }}</td>
+              <td class="product-name">{{ product.name }}</td>
+              <td>{{ product.category || '-' }}</td>
+              <td><strong>{{ product.price | number:'1.2-2' }}</strong></td>
+              <td>{{ product.stock }}</td>
+              <td>{{ product.unit }}</td>
+              <td>
+                <span
+                  class="status"
+                  [class.status-ready]="product.active"
+                  [class.status-failed]="!product.active"
+                >
+                  {{ product.active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="table-actions">
+                  <button type="button" class="action-btn secondary-btn small-btn">
+                    Edit
+                  </button>
 
-    <button
-      type="button"
-      class="primary-button"
-      (click)="loadProducts()"
-    >
-      Search
-    </button>
+                  <button
+                    type="button"
+                    class="action-btn danger-btn small-btn"
+                    (click)="deleteProduct(product)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <button
-      type="button"
-      class="action-button"
-      (click)="resetFilters()"
-    >
-      Reset
-    </button>
-  </div>
+      <!-- PAGINATION -->
+      <div class="pagination" *ngIf="totalPages > 0">
+        <button
+          type="button"
+          class="action-btn secondary-btn"
+          [disabled]="currentPage === 1"
+          (click)="previousPage()"
+        >
+          Previous
+        </button>
 
-  <div *ngIf="loading" class="loading">
-    Loading products...
-  </div>
+        <span>
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
 
-  <div *ngIf="error" class="error">
-    {{ error }}
-  </div>
+        <button
+          type="button"
+          class="action-btn secondary-btn"
+          [disabled]="currentPage === totalPages"
+          (click)="nextPage()"
+        >
+          Next
+        </button>
 
-  <div *ngIf="!loading && products.length === 0" class="empty">
-    No products found.
-  </div>
-
-  <div *ngIf="!loading && products.length > 0" class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <!-- 69.4. Table Headers with Sort -->
-          <th>
-            <button type="button" class="sort-button" (click)="sort('sku')">
-              SKU
-              <span *ngIf="sortBy === 'sku'">
-                {{ sortOrder === 'ASC' ? '↑' : '↓' }}
-              </span>
-            </button>
-          </th>
-
-          <th>
-            <button type="button" class="sort-button" (click)="sort('name')">
-              Name
-              <span *ngIf="sortBy === 'name'">
-                {{ sortOrder === 'ASC' ? '↑' : '↓' }}
-              </span>
-            </button>
-          </th>
-
-          <th>
-            <button type="button" class="sort-button" (click)="sort('category')">
-              Category
-              <span *ngIf="sortBy === 'category'">
-                {{ sortOrder === 'ASC' ? '↑' : '↓' }}
-              </span>
-            </button>
-          </th>
-
-          <th>
-            <button type="button" class="sort-button" (click)="sort('price')">
-              Price
-              <span *ngIf="sortBy === 'price'">
-                {{ sortOrder === 'ASC' ? '↑' : '↓' }}
-              </span>
-            </button>
-          </th>
-
-          <th>
-            <button type="button" class="sort-button" (click)="sort('stock')">
-              Stock
-              <span *ngIf="sortBy === 'stock'">
-                {{ sortOrder === 'ASC' ? '↑' : '↓' }}
-              </span>
-            </button>
-          </th>
-
-          <th>Unit</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let product of products">
-          <td>{{ product.sku }}</td>
-          <td>{{ product.name }}</td>
-          <td>{{ product.category || '-' }}</td>
-          <td>{{ product.price | number:'1.2-2' }}</td>
-          <td>{{ product.stock }}</td>
-          <td>{{ product.unit }}</td>
-          <td>
-            <span
-              class="status"
-              [class.active]="product.active"
-              [class.inactive]="!product.active"
-            >
-              {{ product.active ? 'Active' : 'Inactive' }}
-            </span>
-          </td>
-          <td>
-            <button type="button" class="action-button">
-              Edit
-            </button>
-
-            <button
-              type="button"
-              class="delete-button"
-              (click)="deleteProduct(product)"
-            >
-              Delete
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Pagination UI (DAN 69) -->
-  <div class="pagination" *ngIf="totalPages > 0">
-    <button
-      type="button"
-      class="action-button"
-      [disabled]="currentPage === 1"
-      (click)="previousPage()"
-    >
-      Previous
-    </button>
-
-    <span>
-      Page {{ currentPage }} of {{ totalPages }}
-    </span>
-
-    <button
-      type="button"
-      class="action-button"
-      [disabled]="currentPage === totalPages"
-      (click)="nextPage()"
-    >
-      Next
-    </button>
-
-    <select
-      [(ngModel)]="pageSize"
-      (change)="changePageSize()"
-    >
-      <option [ngValue]="10">10</option>
-      <option [ngValue]="20">20</option>
-      <option [ngValue]="50">50</option>
-    </select>
+        <select
+          [(ngModel)]="pageSize"
+          (change)="changePageSize()"
+          class="page-select"
+        >
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+        </select>
+      </div>
+    }
   </div>
 
 </div>

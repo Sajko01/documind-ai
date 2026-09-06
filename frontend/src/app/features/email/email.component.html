@@ -1,206 +1,124 @@
 <div class="email-page">
 
-  <div class="page-header">
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div>
+      <h1>Generate Email</h1>
+      <p>Generate professional business emails with AI.</p>
+    </div>
+  </header>
 
-    <h1>
-      Generate Email
-    </h1>
-
-    <p>
-      Generate professional business emails with AI.
-    </p>
-
-  </div>
-
-
-  <div class="email-form">
-
-    <mat-form-field appearance="outline">
-
-      <mat-label>
-        Email type
-      </mat-label>
-
-      <mat-select
-        [(ngModel)]="emailType"
-      >
-
-        <mat-option value="sales">
-          Sales
-        </mat-option>
-
-        <mat-option value="support">
-          Support
-        </mat-option>
-
-        <mat-option value="complaint">
-          Complaint
-        </mat-option>
-
-        <mat-option value="offer">
-          Offer
-        </mat-option>
-
-        <mat-option value="follow-up">
-          Follow-up
-        </mat-option>
-
-      </mat-select>
-
-    </mat-form-field>
-
-
-    <mat-form-field appearance="outline">
-
-      <mat-label>
-        Recipient name
-      </mat-label>
-
-      <input
-        matInput
-        [(ngModel)]="recipientName"
-      />
-
-    </mat-form-field>
-
-
-    <mat-form-field appearance="outline">
-
-      <mat-label>
-        Recipient email
-      </mat-label>
-
-      <input
-        matInput
-        type="email"
-        [(ngModel)]="recipientEmail"
-      />
-
-    </mat-form-field>
-
-
-    <mat-form-field appearance="outline">
-
-      <mat-label>
-        Subject
-      </mat-label>
-
-      <input
-        matInput
-        [(ngModel)]="subject"
-      />
-
-    </mat-form-field>
-
-
-    <mat-form-field appearance="outline">
-
-      <mat-label>
-        Context
-      </mat-label>
-
-      <!-- Umesto starog textarea za kontekst, ubaci ovo: -->
-<mat-form-field appearance="outline">
-  <mat-label>Select Offer</mat-label>
-  <mat-select [(ngModel)]="selectedOfferId">
-    <mat-option *ngFor="let offer of offers" [value]="offer.id">
-      {{ offer.offerNumber }} - {{ offer.customerName }} ({{ offer.total }} {{ offer.currency }})
-    </mat-option>
-  </mat-select>
-</mat-form-field>
-
-    </mat-form-field>
-
-
-    <button
-      mat-raised-button
-      color="primary"
-      [disabled]="loading"
-      (click)="generateEmail()"
-    >
-
-      {{ loading
-        ? 'Generating...'
-        : 'Generate Email'
-      }}
-
-    </button>
-
-
-    <p
-      *ngIf="error"
-      class="error"
-    >
+  <!-- ALERTS -->
+  @if (error) {
+    <div class="error-message">
       {{ error }}
-    </p>
+    </div>
+  }
 
-  </div>
+  <!-- EMAIL FORM CARD -->
+  <div class="email-card">
+    <div class="email-form">
 
+      <mat-form-field appearance="outline">
+        <mat-label>Email type</mat-label>
+        <mat-select [(ngModel)]="emailType">
+          <mat-option value="sales">Sales</mat-option>
+          <mat-option value="support">Support</mat-option>
+          <mat-option value="complaint">Complaint</mat-option>
+          <mat-option value="offer">Offer</mat-option>
+          <mat-option value="follow-up">Follow-up</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-  <div
-    *ngIf="generatedEmail"
-    class="generated-email"
-  >
+      <mat-form-field appearance="outline">
+        <mat-label>Recipient name</mat-label>
+        <input matInput [(ngModel)]="recipientName" />
+      </mat-form-field>
 
-    <div class="result-header">
+      <mat-form-field appearance="outline">
+        <mat-label>Recipient email</mat-label>
+        <input matInput type="email" [(ngModel)]="recipientEmail" />
+      </mat-form-field>
 
-      <h2>
-        Generated Email
-      </h2>
+      <mat-form-field appearance="outline">
+        <mat-label>Subject</mat-label>
+        <input matInput [(ngModel)]="subject" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Select Offer</mat-label>
+        <mat-select [(ngModel)]="selectedOfferId">
+          @for (offer of offers; track offer.id) {
+            <mat-option [value]="offer.id">
+              {{ offer.offerNumber }} - {{ offer.customerName }} ({{ offer.total }} {{ offer.currency }})
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
 
       <button
-        mat-stroked-button
-        (click)="copyEmail()"
+        type="button"
+        class="action-btn primary-btn"
+        [disabled]="loading"
+        (click)="generateEmail()"
       >
-        Copy
+        {{ loading ? 'Generating...' : 'Generate Email' }}
       </button>
 
     </div>
-
-
-    <div class="subject">
-
-      <strong>
-        Subject:
-      </strong>
-
-      {{ generatedEmail.subject }}
-
-    </div>
-
-
-    <!-- Prikaz teksta mejla (View mode) ili textarea za izmenu (Edit mode) -->
-    <div
-      *ngIf="!editing"
-      class="email-body">
-      {{ generatedEmail.body }}
-    </div>
-
-    <textarea
-      *ngIf="editing"
-      matInput
-      rows="15"
-      [(ngModel)]="generatedEmail.body"
-      class="edit-textarea">
-    </textarea>
-
-
-    <!-- Dugmad za prebacivanje između moda čitanja i moda izmene -->
-    <button
-      mat-stroked-button
-      *ngIf="!editing"
-      (click)="startEditing()">
-      Edit
-    </button>
-
-    <button
-      mat-raised-button
-      color="primary"
-      *ngIf="editing"
-      (click)="finishEditing()">
-      Done
-    </button>
-
   </div>
+
+  <!-- GENERATED EMAIL RESULT PANEL -->
+  @if (generatedEmail) {
+    <div class="generated-email-card">
+      <div class="result-header">
+        <h2>Generated Email</h2>
+        <button
+          type="button"
+          class="action-btn secondary-btn"
+          (click)="copyEmail()"
+        >
+          Copy
+        </button>
+      </div>
+
+      <div class="subject-row">
+        <strong>Subject:</strong> {{ generatedEmail.subject }}
+      </div>
+
+      @if (!editing) {
+        <div class="email-body">
+          {{ generatedEmail.body }}
+        </div>
+      } @else {
+        <textarea
+          matInput
+          rows="15"
+          [(ngModel)]="generatedEmail.body"
+          class="edit-textarea"
+        ></textarea>
+      }
+
+      <div class="result-actions">
+        @if (!editing) {
+          <button
+            type="button"
+            class="action-btn secondary-btn"
+            (click)="startEditing()"
+          >
+            Edit
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="action-btn primary-btn"
+            (click)="finishEditing()"
+          >
+            Done
+          </button>
+        }
+      </div>
+    </div>
+  }
 
 </div>

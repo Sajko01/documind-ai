@@ -1,5 +1,7 @@
+import time
+import logging
 
-
+logger = logging.getLogger("uvicorn")
 import os
 from dotenv import load_dotenv
 from fastapi import (
@@ -25,9 +27,8 @@ from app.services.text_chunker import TextChunker
 from app.services.llm_service import LlmService
 from app.services.database import get_db
 
-# Važniimporti za pretragu, rerankovanje i rag pipeline
+# Važni importi za pretragu, rerankovanje i rag pipeline
 from app.services.rag_service import hybrid_search, rerank_results
-from app.config import RAG_CONFIDENCE_THRESHOLD
 from app.prompts.rag_prompt import SYSTEM_PROMPT, build_rag_prompt
 
 from email_generation.schemas import (
@@ -168,8 +169,170 @@ async def process_document(
         )
 
 
+# # ==========================================
+# # GLAVNI RAG ENDPOINT
+# # ==========================================
+# @app.post(
+#     "/generate",
+#     response_model=GenerateResponse,
+# )
+# async def generate(
+#     request: GenerateRequest,
+#     db: Session = Depends(get_db),
+# ):
+#     try:
+#         query_text = getattr(request, "question", None) or getattr(request, "query", "")
+#         if not query_text.strip():
+#             raise HTTPException(status_code=400, detail="Query/Question cannot be empty")
+
+#         # Proveri da li GenerateRequest u app/schemas.py ima definisan organization_id!
+#         organization_id = getattr(request, "organization_id", None)
+#         if not organization_id:
+#             raise HTTPException(status_code=400, detail="organization_id is required")
+
+#         # --------------------------------
+#         # 1. EMBEDDING
+#         # --------------------------------
+#         query_embedding = embedding_service.embed(query_text)
+
+#         # --------------------------------
+#         # 2. HYBRID RETRIEVAL
+#         # --------------------------------
+#         hybrid_results = hybrid_search(
+#             db=db,
+#             organization_id=organization_id,
+#             query=query_text,
+#             query_embedding=query_embedding,
+#         )
+
+#         # --------------------------------
+#         # 3. RERANKING
+#         # --------------------------------
+#         reranked_results = rerank_results(
+#             query=query_text,
+#             results=hybrid_results,
+#             top_k=RAG_TOP_K,
+#         )
+
+#         # Logging rezultata
+#         print(f"Query: {query_text}")
+#         print(f"Hybrid candidates: {len(hybrid_results)}")
+#         print(f"Final reranked results: {len(reranked_results)}")
+#         print("=" * 50)
+
+#         for item in reranked_results:
+#             print("Document:", item.get("filename"))
+#             print("Page:", item.get("page_number"))
+#             print("Hybrid:", item.get("hybrid_score"))
+#             print("Reranker:", item.get("reranker_score"))
+#             print("-" * 50)
+
+#         # --------------------------------
+#         # 4. NO RESULTS
+#         # --------------------------------
+#         if not reranked_results:
+#             return {
+#                 "success": True,
+#                 "answer": "Ne mogu pouzdano da pronađem odgovor u dostupnoj dokumentaciji.",
+#                 "sources": [],
+#                 "tool_results": [],
+#                 "model": "qwen/qwen3.8-27b",
+#                 "confidence": 0.0,
+#                 "answered": False,
+#             }
+
+#         # --------------------------------
+#         # 5. BEST HYBRID SCORE ZA CONFIDENCE
+#         # --------------------------------
+#         best_hybrid_score = max(
+#             item.get("hybrid_score", 0.0)
+#             for item in reranked_results
+#         )
+
+#         if best_hybrid_score < RAG_CONFIDENCE_THRESHOLD:
+#             return {
+#                 "success": True,
+#                 "answer": "Ne mogu pouzdano da pronađem odgovor u dostupnoj dokumentaciji.",
+#                 "sources": [],
+#                 "tool_results": [],
+#                 "model": "qwen/qwen3.8-27b",
+#                 "confidence": float(best_hybrid_score),
+#                 "answered": False,
+#             }
+
+#         # --------------------------------
+#         # 6. CONTEXT
+#         # --------------------------------
+#         def build_context(search_results):
+#             context_parts = []
+#             for item in search_results:
+#                 filename = item.get("filename", "Nepoznat dokument")
+#                 page = item.get("page_number", "?")
+#                 content = item.get("content", "")
+                
+#                 context_parts.append(
+#                     f"Document: {filename}\nPage: {page}\n{content}"
+#                 )
+#             return "\n\n---\n\n".join(context_parts)
+
+#         context = build_context(reranked_results)
+
+#         # --------------------------------
+#         # 7. LLM
+#         # --------------------------------
+#         user_prompt = build_rag_prompt(question=query_text, context=context)
+#         messages = [
+#             {"role": "system", "content": SYSTEM_PROMPT},
+#             {"role": "user", "content": user_prompt}
+#         ]
+
+#         response = llm_service.chat_completion(messages=messages)
+#         answer = response.choices[0].message.content
+
+#         # --------------------------------
+#         # 8. SOURCES
+#         # --------------------------------
+#         sources = [
+#             {
+#                 "document_id": str(item.get("document_id")) if item.get("document_id") else "",
+#                 "document": item.get("filename", "Unknown"),
+#                 "page": item.get("page_number"),
+#                 "score": float(item.get("reranker_score", item.get("hybrid_score", 0.0)))
+#             }
+#             for item in reranked_results
+#         ]
+
+#         # --------------------------------
+#         # 9. RESPONSE
+#         # --------------------------------
+#         unknown_phrases = [
+#             "nemam informacije",
+#             "nemam podatak",
+#             "ne mogu pronaći",
+#             "nažalost",
+#         ]
+#         is_fallback = any(
+#             phrase in answer.lower() for phrase in unknown_phrases
+#         )
+
+#         return {
+#             "success": True,
+#             "answer": answer,
+#             "sources": [] if is_fallback else sources,
+#             "tool_results": [],
+#             "model": "qwen/qwen3.8-27b",
+#             "confidence": 0.0 if is_fallback else float(best_hybrid_score),
+#             "answered": not is_fallback,
+#         }
+
+#     except HTTPException:
+#         raise
+#     except Exception as error:
+#         print(f"Generation error: {error}")
+#         raise HTTPException(status_code=500, detail=str(error))
+
 # ==========================================
-# GLAVNI RAG ENDPOINT (Prati tvoj strogi flow)
+# GLAVNI RAG ENDPOINT (Sa Observability metrikama)
 # ==========================================
 @app.post(
     "/generate",
@@ -179,39 +342,45 @@ async def generate(
     request: GenerateRequest,
     db: Session = Depends(get_db),
 ):
+    total_start_time = time.time()
     try:
         query_text = getattr(request, "question", None) or getattr(request, "query", "")
         if not query_text.strip():
             raise HTTPException(status_code=400, detail="Query/Question cannot be empty")
 
-        organization_id = getattr(request, "organization_id", None) or "default-org"
+        organization_id = getattr(request, "organization_id", None)
+        if not organization_id:
+            raise HTTPException(status_code=400, detail="organization_id is required")
 
         # --------------------------------
-        # 1. EMBEDDING
+        # 1. EMBEDDING (Sa merenjem vremena)
         # --------------------------------
+        t_emb_start = time.time()
         query_embedding = embedding_service.embed(query_text)
+        embedding_latency = time.time() - t_emb_start
 
         # --------------------------------
-        # 2. HYBRID RETRIEVAL
+        # 2. HYBRID RETRIEVAL & 3. RERANKING
+        # (Merenje zajedničkog vremena za pretragu i rerank)
         # --------------------------------
+        t_ret_start = time.time()
+        
         hybrid_results = hybrid_search(
             db=db,
             organization_id=organization_id,
             query=query_text,
             query_embedding=query_embedding,
         )
-# --------------------------------
-        # 3. RERANKING (Služi samo za redosled)
-        # --------------------------------
+
         reranked_results = rerank_results(
             query=query_text,
             results=hybrid_results,
             top_k=RAG_TOP_K,
         )
+        
+        retrieval_latency = time.time() - t_ret_start
 
-        # ==========================================
-        # 👉 OVDJE DODAJES KORAK 25 (LOGGING)
-        # ==========================================
+        # Logging rezultata pretrage
         print(f"Query: {query_text}")
         print(f"Hybrid candidates: {len(hybrid_results)}")
         print(f"Final reranked results: {len(reranked_results)}")
@@ -223,12 +392,13 @@ async def generate(
             print("Hybrid:", item.get("hybrid_score"))
             print("Reranker:", item.get("reranker_score"))
             print("-" * 50)
-        # ==========================================
 
         # --------------------------------
         # 4. NO RESULTS
         # --------------------------------
         if not reranked_results:
+            total_latency = time.time() - total_start_time
+            logger.info(f"\nRequest: /generate\nTotal: {total_latency:.2f}s\nEmbedding: {embedding_latency:.2f}s\nRetrieval: {retrieval_latency:.2f}s\nLLM: 0.00s")
             return {
                 "success": True,
                 "answer": "Ne mogu pouzdano da pronađem odgovor u dostupnoj dokumentaciji.",
@@ -242,13 +412,14 @@ async def generate(
         # --------------------------------
         # 5. BEST HYBRID SCORE ZA CONFIDENCE
         # --------------------------------
-        # Uzimamo hibridni skor najboljeg rezultata za merilo pouzdanosti!
         best_hybrid_score = max(
             item.get("hybrid_score", 0.0)
             for item in reranked_results
         )
 
         if best_hybrid_score < RAG_CONFIDENCE_THRESHOLD:
+            total_latency = time.time() - total_start_time
+            logger.info(f"\nRequest: /generate\nTotal: {total_latency:.2f}s\nEmbedding: {embedding_latency:.2f}s\nRetrieval: {retrieval_latency:.2f}s\nLLM: 0.00s")
             return {
                 "success": True,
                 "answer": "Ne mogu pouzdano da pronađem odgovor u dostupnoj dokumentaciji.",
@@ -258,7 +429,8 @@ async def generate(
                 "confidence": float(best_hybrid_score),
                 "answered": False,
             }
-       # --------------------------------
+
+        # --------------------------------
         # 6. CONTEXT
         # --------------------------------
         def build_context(search_results):
@@ -268,15 +440,15 @@ async def generate(
                 page = item.get("page_number", "?")
                 content = item.get("content", "")
                 
-                # Tačno po Koraku 26 formatu (bez hybrid/reranker skorova)
                 context_parts.append(
                     f"Document: {filename}\nPage: {page}\n{content}"
                 )
             return "\n\n---\n\n".join(context_parts)
 
         context = build_context(reranked_results)
+
         # --------------------------------
-        # 7. LLM
+        # 7. LLM (Sa merenjem vremena)
         # --------------------------------
         user_prompt = build_rag_prompt(question=query_text, context=context)
         messages = [
@@ -284,8 +456,23 @@ async def generate(
             {"role": "user", "content": user_prompt}
         ]
 
+        t_llm_start = time.time()
         response = llm_service.chat_completion(messages=messages)
+        llm_latency = time.time() - t_llm_start
+        
         answer = response.choices[0].message.content
+
+        # Ukupno vreme izvršavanja celog zahteva
+        total_latency = time.time() - total_start_time
+
+        # Formatirani konzolni ispis (Observability metrike)
+        logger.info(
+            f"\nRequest: /generate\n"
+            f"Total: {total_latency:.2f}s\n"
+            f"Embedding: {embedding_latency:.2f}s\n"
+            f"Retrieval: {retrieval_latency:.2f}s\n"
+            f"LLM: {llm_latency:.2f}s"
+        )
 
         # --------------------------------
         # 8. SOURCES
@@ -295,13 +482,13 @@ async def generate(
                 "document_id": str(item.get("document_id")) if item.get("document_id") else "",
                 "document": item.get("filename", "Unknown"),
                 "page": item.get("page_number"),
-                "score": float(item.get("relevance_score", item.get("hybrid_score", 0.0)))
+                "score": float(item.get("reranker_score", item.get("hybrid_score", 0.0)))
             }
             for item in reranked_results
         ]
 
-       # --------------------------------
-        # 9. RESPONSE (Popravljen "answered" flag)
+        # --------------------------------
+        # 9. RESPONSE
         # --------------------------------
         unknown_phrases = [
             "nemam informacije",
@@ -313,6 +500,16 @@ async def generate(
             phrase in answer.lower() for phrase in unknown_phrases
         )
 
+        # return {
+        #     "success": True,
+        #     "answer": answer,
+        #     "sources": [] if is_fallback else sources,
+        #     "tool_results": [],
+        #     "model": "qwen/qwen3.8-27b",
+        #     "confidence": 0.0 if is_fallback else float(best_hybrid_score),
+        #     "answered": not is_fallback,
+        # }
+
         return {
             "success": True,
             "answer": answer,
@@ -320,12 +517,24 @@ async def generate(
             "tool_results": [],
             "model": "qwen/qwen3.8-27b",
             "confidence": 0.0 if is_fallback else float(best_hybrid_score),
-            "answered": not is_fallback,  # Biće False ako je dao fallback!
+            "answered": not is_fallback,
+            "metrics": {
+                "total": round(total_latency, 2),
+                "embedding": round(embedding_latency, 2),
+                "retrieval": round(retrieval_latency, 2),
+                "llm": round(llm_latency, 2),
+            }
         }
 
+      
+    except HTTPException:
+        raise
     except Exception as error:
+        # Errors logging (Observability requirement)
+        logger.error(f"[Error] Generation failed for query: {error}")
         print(f"Generation error: {error}")
         raise HTTPException(status_code=500, detail=str(error))
+
 
 @app.post(
     "/ai/generate-email",

@@ -2,7 +2,8 @@ import json
 import os
 import requests
 
-AI_SERVICE_URL = "http://localhost:8000"  # Prilagodi port ako je drugačiji
+# Čita iz Docker okruženja, a ako nema - koristi localhost za lokalni test
+AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://localhost:8000")
 
 def load_json(file_path):
     with open(file_path, "r", encoding="utf-8") as f:

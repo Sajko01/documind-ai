@@ -1,24 +1,35 @@
-<div class="document-viewer">
-  <header>
-    <h1>Document Viewer</h1>
-    <p>Document ID: {{ documentId }}</p>
-    <p>Page: {{ page }}</p>
+<div class="viewer-layout">
+  
+  <!-- HEADER -->
+  <header class="viewer-header">
+    <div class="header-info">
+      <h1>Document Viewer</h1>
+      <div class="meta-badges">
+        <span class="badge" *ngIf="documentId">ID: {{ documentId }}</span>
+        <span class="badge page-badge" *ngIf="page">Page {{ page }}</span>
+      </div>
+    </div>
   </header>
 
-  <div *ngIf="loading">
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="viewer-loading">
+    <div class="spinner"></div>
     <p>Učitavanje dokumenta...</p>
   </div>
 
-  <div *ngIf="errorMessage" class="error">
+  <!-- ERROR STATE -->
+  <div *ngIf="errorMessage" class="error-message">
+    <span class="error-icon">⚠️</span>
     <p>{{ errorMessage }}</p>
   </div>
 
-  <div class="viewer-container" *ngIf="!loading && pdfUrl">
+  <!-- PDF VIEWER CONTAINER -->
+  <main class="viewer-container" *ngIf="!loading && pdfUrl && !errorMessage">
     <iframe
       [src]="pdfUrl"
-      width="100%"
-      height="750px"
+      class="pdf-iframe"
       frameborder="0"
     ></iframe>
-  </div>
+  </main>
+
 </div>

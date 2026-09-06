@@ -1,8 +1,6 @@
 import {
   Controller,
   Get,
-  Param,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 
@@ -20,8 +18,11 @@ import {
 
 import { 
   UserRole 
-} from 'src/users/entities/user.entity'; // Proveri da li je putanja tačna za tvoj projekat
+} from 'src/users/entities/user.entity';
 
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+// 👇 KLJUČNA IZMENA: Dodata reč 'type' jer je JwtPayload interfejs
+import type { JwtPayload } from 'src/auth/interfaces/jwt-payload.interface';
 
 @Controller('unanswered-questions')
 @UseGuards(JwtAuthGuard)
@@ -31,24 +32,21 @@ export class UnansweredQuestionsController {
     private readonly service: UnansweredQuestionsService,
   ) {}
 
-
   @Roles(UserRole.ADMIN)
   @Get()
   async findAll(
-    @Req() req: any,
+    @CurrentUser() user: JwtPayload, // Možeš i ovde koristiti JwtPayload umesto @Req()
   ) {
-
     return this.service.findAll(
-      req.user.organizationId,
+      user.organizationId,
     );
-
   }
 
-
-  // Definišemo GET endpoint: GET /unanswered-questions/count/:organizationId
-  @Get('count/:organizationId')
-  async getOpenCount(@Param('organizationId') organizationId: string) {
-    const count = await this.service.count(organizationId);
-    return { count }; // Vraća JSON: { "count": 5 }
+  // ✅ BEZBEDNO
+  @Get('count')
+  @UseGuards(JwtAuthGuard)
+  async getOpenCount(@CurrentUser() user: JwtPayload) {
+    const count = await this.service.count(user.organizationId);
+    return { count };
   }
 }

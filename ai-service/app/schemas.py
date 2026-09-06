@@ -40,11 +40,37 @@ class GenerateRequest(BaseModel):
     context: Optional[str] = ""
 
 
+# class GenerateResponse(BaseModel):
+#     success: bool = True
+#     answer: str
+#     model: str
+#     sources: List[SourceCitation] = []
+#     tool_results: List[Dict[str, Any]] = []
+#     confidence: float = 0.95
+#     answered: bool = True
+
+
+class GenerateMetrics(BaseModel):
+    total: float
+    embedding: float
+    retrieval: float
+    llm: float
+
+
 class GenerateResponse(BaseModel):
+
     success: bool = True
+
     answer: str
+
     model: str
+
     sources: List[SourceCitation] = []
+
     tool_results: List[Dict[str, Any]] = []
+
     confidence: float = 0.95
+
     answered: bool = True
+
+    metrics: Optional[GenerateMetrics] = None

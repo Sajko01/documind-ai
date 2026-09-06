@@ -1,17 +1,13 @@
 <div class="documents-page">
 
-  <div class="page-header">
-
+  <!-- PAGE HEADER -->
+  <header class="page-header">
     <div>
       <h1>Documents</h1>
-
-      <p>
-        Manage your organization's documents.
-      </p>
+      <p>Manage your organization's documents.</p>
     </div>
 
     <div>
-
       <input
         #fileInput
         type="file"
@@ -22,27 +18,21 @@
 
       <button
         type="button"
+        class="upload-btn"
         (click)="fileInput.click()"
         [disabled]="uploading"
       >
-        {{
-          uploading
-            ? 'Uploading...'
-            : 'Upload PDF'
-        }}
+        {{ uploading ? 'Uploading...' : 'Upload PDF' }}
       </button>
-
     </div>
+  </header>
 
-  </div>
-
-
+  <!-- ALERTS -->
   @if (successMessage) {
     <div class="success-message">
       {{ successMessage }}
     </div>
   }
-
 
   @if (errorMessage) {
     <div class="error-message">
@@ -50,223 +40,133 @@
     </div>
   }
 
-
+  <!-- DOCUMENTS TABLE CARD -->
   <div class="documents-card">
-
     @if (loading) {
-
       <div class="empty-state">
-        Loading documents...
+        <div class="spinner"></div>
+        <p>Loading documents...</p>
       </div>
-
     } @else if (documents.length === 0) {
-
       <div class="empty-state">
-
+        <span class="empty-icon">📁</span>
         <h3>No documents yet</h3>
-
-        <p>
-          Upload your first PDF document.
-        </p>
-
+        <p>Upload your first PDF document to get started.</p>
       </div>
-
     } @else {
-
-      <table>
-
-        <thead>
-
-          <tr>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Size</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          @for (
-            document of documents;
-            track document.id
-          ) {
-
+      <div class="table-container">
+        <table>
+          <thead>
             <tr>
-
-              <td>
-                {{ document.originalName }}
-              </td>
-
-              <td>
-
-                <span
-                  class="status"
-                  [class.status-uploaded]="
-                    document.status === 'UPLOADED'
-                  "
-                  [class.status-ready]="
-                    document.status === 'READY'
-                  "
-                  [class.status-processing]="
-                    document.status === 'PROCESSING'
-                  "
-                  [class.status-failed]="
-                    document.status === 'FAILED'
-                  "
-                >
-                  {{ document.status }}
-                </span>
-
-              </td>
-
-              <td>
-                {{
-                  formatFileSize(
-                    document.size
-                  )
-                }}
-              </td>
-
-              <td>
-                {{
-                  document.createdAt
-                    | date:'dd.MM.yyyy HH:mm'
-                }}
-              </td>
-
-              <td>
-
-                <button
-                  mat-stroked-button
-                  [disabled]="document.status !== 'READY'"
-                  (click)="generateSummary(document.id)"
-                >
-                  Generate summary
-                </button>
-
-                <button
-                  type="button"
-                  class="delete-button"
-                  (click)="
-                    deleteDocument(document)
-                  "
-                >
-                  Delete
-                </button>
-
-              </td>
-
+              <th>Name</th>
+              <th>Status</th>
+              <th>Size</th>
+              <th>Date</th>
+              <th class="text-right">Actions</th>
             </tr>
+          </thead>
+          <tbody>
+            @for (document of documents; track document.id) {
+              <tr>
+                <td class="doc-name">
+                  <span class="file-icon">📄</span>
+                  {{ document.originalName }}
+                </td>
+                <td>
+                  <span
+                    class="status"
+                    [class.status-uploaded]="document.status === 'UPLOADED'"
+                    [class.status-ready]="document.status === 'READY'"
+                    [class.status-processing]="document.status === 'PROCESSING'"
+                    [class.status-failed]="document.status === 'FAILED'"
+                  >
+                    {{ document.status }}
+                  </span>
+                </td>
+                <td>{{ formatFileSize(document.size) }}</td>
+                <td>{{ document.createdAt | date:'dd.MM.yyyy HH:mm' }}</td>
+                <td class="text-right actions-cell">
+                  <button
+                    type="button"
+                    class="action-btn summary-action-btn"
+                    [disabled]="document.status !== 'READY'"
+                    (click)="generateSummary(document.id)"
+                  >
+                    Generate summary
+                  </button>
 
-          }
-
-        </tbody>
-
-      </table>
-
+                  <button
+                    type="button"
+                    class="action-btn delete-button"
+                    (click)="deleteDocument(document)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     }
-
   </div>
 
+  <!-- SUMMARY STATES & PANEL -->
+  @if (summaryLoading) {
+    <div class="summary-loading-card">
+      <div class="spinner"></div>
+      <p>Generating summary...</p>
+    </div>
+  }
 
-  <!-- DAN 82 — SUMMARY PANEL / LOADING / ERROR -->
+  @if (summaryError) {
+    <div class="summary-error-card">
+      <p>{{ summaryError }}</p>
+    </div>
+  }
 
-  <div
-    *ngIf="summaryLoading"
-    class="summary-loading"
-  >
-    Generating summary...
-  </div>
+  @if (selectedSummary) {
+    <div class="summary-panel">
+      <h2>Summary</h2>
+      <p class="summary-text">{{ selectedSummary.summary }}</p>
 
+      @if (selectedSummary.key_points.length) {
+        <h3>Key points</h3>
+        <ul>
+          @for (point of selectedSummary.key_points; track point) {
+            <li>{{ point }}</li>
+          }
+        </ul>
+      }
 
-  <div
-    *ngIf="summaryError"
-    class="summary-error"
-  >
-    {{ summaryError }}
-  </div>
+      @if (selectedSummary.products.length) {
+        <h3>Products</h3>
+        <ul>
+          @for (product of selectedSummary.products; track product) {
+            <li>{{ product }}</li>
+          }
+        </ul>
+      }
 
+      @if (selectedSummary.prices.length) {
+        <h3>Prices</h3>
+        <ul>
+          @for (price of selectedSummary.prices; track price) {
+            <li>{{ price }}</li>
+          }
+        </ul>
+      }
 
-  <div
-    *ngIf="selectedSummary"
-    class="summary-panel"
-  >
-
-    <h2>
-      Summary
-    </h2>
-
-    <p>
-      {{ selectedSummary.summary }}
-    </p>
-
-
-    <h3>
-      Key points
-    </h3>
-
-    <ul>
-      <li
-        *ngFor="
-          let point
-          of selectedSummary.key_points
-        "
-      >
-        {{ point }}
-      </li>
-    </ul>
-
-
-    <h3>
-      Products
-    </h3>
-
-    <ul>
-      <li
-        *ngFor="
-          let product
-          of selectedSummary.products
-        "
-      >
-        {{ product }}
-      </li>
-    </ul>
-
-
-    <h3>
-      Prices
-    </h3>
-
-    <ul>
-      <li
-        *ngFor="
-          let price
-          of selectedSummary.prices
-        "
-      >
-        {{ price }}
-      </li>
-    </ul>
-
-
-    <h3>
-      Important conditions
-    </h3>
-
-    <ul>
-      <li
-        *ngFor="
-          let condition
-          of selectedSummary.important_conditions
-        "
-      >
-        {{ condition }}
-      </li>
-    </ul>
-
-  </div>
+      @if (selectedSummary.important_conditions.length) {
+        <h3>Important conditions</h3>
+        <ul>
+          @for (condition of selectedSummary.important_conditions; track condition) {
+            <li>{{ condition }}</li>
+          }
+        </ul>
+      }
+    </div>
+  
+  }
 
 </div>

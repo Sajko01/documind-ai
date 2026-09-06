@@ -215,34 +215,6 @@ async ask(
   );
 }
 
-// @Get(':id/file')
-//   async getDocumentFile(
-//     @Param('id') id: string,
-//     @CurrentUser() user: any,
-//     @Res() res: express.Response, // 👈 Korišćenje express.Response
-//   ) {
-//     // Zameniti 'findOne' tačnim imenom metode iz tvog DocumentsService-a
-//     const document = await this.documentsService.findOne(id, user.organizationId);
-
-//     if (!document) {
-//       throw new NotFoundException('Document not found');
-//     }
-
-//     const filePath = document.filename || document.storagePath;
-
-//     if (!filePath || !existsSync(filePath)) {
-//       throw new NotFoundException('Physical file not found on server');
-//     }
-
-//     res.setHeader('Content-Type', 'application/pdf');
-//     res.setHeader(
-//       'Content-Disposition',
-//       `inline; filename="${document.originalName || 'document.pdf'}"`,
-//     );
-
-//     const stream = createReadStream(filePath);
-//     stream.pipe(res);
-//   }
 @Get(':id/file')
   @Roles(UserRole.ADMIN, UserRole.EMPLOYEE, UserRole.VIEWER)
   @ApiOperation({

@@ -1,4 +1,4 @@
-.offers-page {
+.products-page {
   // padding: 32px;
   // max-width: 1200px;
   // margin: 0 auto;
@@ -6,7 +6,8 @@
   // background: #f5f5f5;
   // min-height: calc(100vh - 64px);
 
-      padding: 32px;
+  
+    padding: 32px;
   // max-width: 1200px;
   // margin: 0 auto;
   max-width: 100%
@@ -38,43 +39,26 @@
     color: #64748b;
     font-size: 14px;
   }
-
-  .upload-btn {
-    padding: 10px 18px;
-    border-radius: 8px;
-    background: #2563eb;
-    color: white;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    box-shadow: none;
-    transition: background 0.2s;
-
-    &:hover {
-      background: #1d4ed8;
-    }
-  }
 }
 
-.offers-card {
+.products-card {
   background: white;
   border-radius: 12px;
-  overflow: hidden;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
 }
 
 .table-container {
   overflow-x: auto;
 }
 
-.offers-table {
+table {
   width: 100%;
-  background: transparent;
   border-collapse: collapse;
   text-align: left;
 
-  th.mat-header-cell {
+  th {
     background: #f8fafc;
     font-weight: 600;
     color: #475569;
@@ -85,37 +69,29 @@
     border-bottom: 1px solid #e2e8f0;
   }
 
-  td.mat-cell {
+  td {
     padding: 16px 20px;
     border-bottom: 1px solid #e2e8f0;
     color: #334155;
     font-size: 14px;
   }
 
-  tr.mat-header-row {
-    height: auto;
-  }
-
-  tr.mat-row {
-    height: auto;
+  tr {
     transition: background 0.2s;
 
-    &:hover td.mat-cell {
+    &:hover td {
       background: #f8fafc;
     }
 
-    &:last-child td.mat-cell {
+    &:last-child td {
       border-bottom: none;
     }
   }
 }
 
-.doc-name {
+.product-name {
   font-weight: 500;
   color: #0f172a;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .status {
@@ -127,19 +103,19 @@
   letter-spacing: 0.025em;
 }
 
-.status-uploaded {
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.status-ready {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.status-failed {
+.status-open {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.status-reviewed {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-resolved {
+  background: #dcfce7;
+  color: #166534;
 }
 
 .empty-state {

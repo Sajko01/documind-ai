@@ -1,14 +1,40 @@
+# services:
+#   postgres:
+#     image: pgvector/pgvector:pg16
+#     container_name: documind-postgres
+
+#     restart: unless-stopped
+
+#     environment:
+#       POSTGRES_DB: documind
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: postgres
+
+#     ports:
+#       - "5432:5432"
+
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U postgres -d documind"]
+#       interval: 5s
+#       timeout: 5s
+#       retries: 10
+
+# volumes:
+#   postgres_data:
+
 services:
+
   postgres:
     image: pgvector/pgvector:pg16
     container_name: documind-postgres
 
-    restart: unless-stopped
-
     environment:
       POSTGRES_DB: documind
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: sajkoni
+      POSTGRES_PASSWORD: Sajkoni1214!
 
     ports:
       - "5432:5432"
@@ -17,10 +43,108 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d documind"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d documind"
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
+
+    restart: unless-stopped
+
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+
+    container_name: documind-ai-service
+
+    environment:
+      AI_SERVICE_PORT: 8000
+
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      LLM_MODEL: ${LLM_MODEL}
+
+      RAG_CONFIDENCE_THRESHOLD: ${RAG_CONFIDENCE_THRESHOLD:-0.40}
+      RAG_TOP_K: ${RAG_TOP_K:-5}
+
+      RAG_VECTOR_WEIGHT: ${RAG_VECTOR_WEIGHT:-0.70}
+      RAG_KEYWORD_WEIGHT: ${RAG_KEYWORD_WEIGHT:-0.30}
+
+      # DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/documind
+      DATABASE_URL: postgresql+psycopg2://sajkoni:Sajkoni1214!@postgres:5432/documind
+
+
+      RAG_VECTOR_TOP_K: ${RAG_VECTOR_TOP_K:-20}
+      RAG_KEYWORD_TOP_K: ${RAG_KEYWORD_TOP_K:-20}
+      RAG_CANDIDATE_TOP_K: ${RAG_CANDIDATE_TOP_K:-20}
+
+      DEBUG_RAG: ${DEBUG_RAG:-false}
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: documind-backend
+
+    environment:
+      NODE_ENV: production
+
+      PORT: 3000
+
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: documind
+      DATABASE_USER: sajkoni
+      DATABASE_PASSWORD: Sajkoni1214!
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+
+      AI_SERVICE_URL: http://ai-service:8000
+
+    ports:
+      - "3000:3000"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+      ai-service:
+        condition: service_started
+
+    restart: unless-stopped
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: documind-frontend
+
+    ports:
+      - "4200:80"
+
+    depends_on:
+      - backend
+
+    restart: unless-stopped
+
 
 volumes:
   postgres_data:

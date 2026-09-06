@@ -6,7 +6,7 @@ import { DashboardService, DashboardMetrics, AiMetrics, PopularQuestion, Popular
 import { MatCardModule } from '@angular/material/card';
 import { DecimalPipe } from '@angular/common';
 import { FeedbackService } from './services/feedback.service';
-import { UnansweredQuestion } from '../unanswered-questions/unanswered-question.model';
+import { UnansweredQuestion } from '../unanswered-questions/unanswered-questions.model';
 
 export interface FeedbackStatistics {
   positivePercentage: number;
@@ -17,7 +17,7 @@ export interface FeedbackStatistics {
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [AsyncPipe, NgIf, MatCardModule, DecimalPipe, CommonModule],
+  imports: [AsyncPipe , MatCardModule, DecimalPipe, CommonModule],
   templateUrl: '../dashboard/dashboard.component.html',
   styleUrls: ['../dashboard/dashboard.component.scss']
 })

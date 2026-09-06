@@ -42,20 +42,26 @@ export class ChatService {
     return this.http.post<Conversation>(`${this.apiUrl}/conversations`, {});
   }
 
+
   sendMessage(request: SendMessageRequest): Observable<ChatResponse> {
     return this.http.post<ChatResponse>(`${this.apiUrl}/message`, request).pipe(
-      map((response) => {
+      map((response: any) => {
         let updatedAssistant = { ...response.assistantMessage };
 
-        // Deduplikacija RAG izvora
+        // Prebacujemo metrike sa root odgovora direktno u poruku asistenta
+        if (response.metrics) {
+          updatedAssistant.metrics = response.metrics;
+        }
+
         if (response?.assistantMessage?.sources?.length) {
           const rawSources = response.assistantMessage.sources;
 
+          // 👉 Eksplicitno dodati tipovi (any) da bi TypeScript bio zadovoljan
           const uniqueSources = rawSources.filter(
-            (source, index, self) =>
+            (source: any, index: number, self: any[]) =>
               index ===
               self.findIndex(
-                (s) => s.documentId === source.documentId && s.page === source.page
+                (s: any) => s.documentId === source.documentId && s.page === source.page
               )
           );
 
@@ -70,8 +76,10 @@ export class ChatService {
     );
   }
 
+
+
+
   summarizeConversation(conversationId: string): Observable<ConversationSummary> {
-    // Ispravljeno: Uklonjen je višak /chat iz putanje pošto backend čeka na /api/documents/...
     return this.http.post<ConversationSummary>(`http://localhost:3000/api/documents/conversations/${conversationId}/summary`, {});
   }
 }

@@ -18,7 +18,7 @@ export class ProductsComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  // Filter Atributi (DAN 68)
+  // Filter Atributi
   search = '';
   sku = '';
   category = '';
@@ -28,13 +28,13 @@ export class ProductsComponent implements OnInit {
   maxStock: number | null = null;
   active: boolean | null = null;
 
-  // Pagination Properties (DAN 69)
+  // Pagination Properties
   currentPage = 1;
   pageSize = 10;
   totalPages = 0;
   totalProducts = 0;
 
-  // 69.1. Sorting Properties
+  // Sorting Properties
   sortBy = 'createdAt';
   sortOrder: 'ASC' | 'DESC' = 'DESC';
 
@@ -54,7 +54,7 @@ export class ProductsComponent implements OnInit {
     params = params.set('page', this.currentPage);
     params = params.set('limit', this.pageSize);
 
-    // 69.2. Sorting params
+    // Sorting params
     params = params.set('sortBy', this.sortBy);
     params = params.set('sortOrder', this.sortOrder);
 
@@ -111,7 +111,6 @@ export class ProductsComponent implements OnInit {
     });
   }
 
-  // 69.3. Sort method
   sort(field: string): void {
     if (this.sortBy === field) {
       this.sortOrder = this.sortOrder === 'ASC' ? 'DESC' : 'ASC';
@@ -121,18 +120,15 @@ export class ProductsComponent implements OnInit {
     }
 
     this.currentPage = 1;
-
     this.loadProducts();
   }
 
-  // Pagination methods
   previousPage(): void {
     if (this.currentPage <= 1) {
       return;
     }
 
     this.currentPage--;
-
     this.loadProducts();
   }
 
@@ -142,13 +138,11 @@ export class ProductsComponent implements OnInit {
     }
 
     this.currentPage++;
-
     this.loadProducts();
   }
 
   changePageSize(): void {
     this.currentPage = 1;
-
     this.loadProducts();
   }
 

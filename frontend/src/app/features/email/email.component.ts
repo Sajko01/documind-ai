@@ -39,9 +39,7 @@ import {
 
 @Component({
   selector: 'app-email',
-
   standalone: true,
-
   imports: [
     CommonModule,
     FormsModule,
@@ -50,46 +48,29 @@ import {
     MatInputModule,
     MatSelectModule,
   ],
-
-  templateUrl:
-    './email.component.html',
-
-  styleUrl:
-    './email.component.scss',
+  templateUrl: './email.component.html',
+  styleUrl: './email.component.scss',
 })
 export class EmailComponent implements OnInit {
-
   emailType: EmailType = 'sales';
-
   recipientName = '';
-
   recipientEmail = '';
-
   subject = '';
-
   language = 'en';
-
   tone = 'professional';
 
-  generatedEmail:
-    GenerateEmailResponse | null = null;
-
+  generatedEmail: GenerateEmailResponse | null = null;
   loading = false;
-
   error = '';
 
-  // Dodato za Edit mode
   editing = false;
 
-  // Polja za izabrane ponude
   offers: any[] = [];
   selectedOfferId = '';
 
   constructor(
-    private readonly emailService:
-      EmailService,
-    private readonly offersService:
-      OffersService,
+    private readonly emailService: EmailService,
+    private readonly offersService: OffersService,
   ) {}
 
   ngOnInit(): void {
@@ -109,25 +90,17 @@ export class EmailComponent implements OnInit {
   }
 
   generateEmail(): void {
-
     if (!this.selectedOfferId) {
-
-      this.error =
-        'Please select an offer.';
-
+      this.error = 'Please select an offer.';
       return;
     }
 
     this.loading = true;
-
     this.error = '';
-
     this.generatedEmail = null;
-
-    // Kada generišemo novi mejl, obavezno gasimo edit mode ako je bio uključen
     this.editing = false;
 
-   this.emailService
+    this.emailService
       .generateEmail({
         emailType: this.emailType,
         recipientName: this.recipientName,
@@ -136,49 +109,30 @@ export class EmailComponent implements OnInit {
         offerId: this.selectedOfferId,
         language: this.language,
         tone: this.tone,
-        context: `Generisanje email-a za ponudu ID: ${this.selectedOfferId}`, // 👈 DODAJ OVO! (ili prosledi neki drugi opisni tekst kao kontekst)
+        context: `Generisanje email-a za ponudu ID: ${this.selectedOfferId}`,
       })
-
       .subscribe({
-
-        next: result => {
-
-          this.generatedEmail =
-            result;
-
+        next: (result) => {
+          this.generatedEmail = result;
           this.loading = false;
         },
-
-        error: error => {
-
-          console.error(
-            'Email generation failed',
-            error,
-          );
-
-          this.error =
-            'Failed to generate email.';
-
+        error: (error) => {
+          console.error('Email generation failed', error);
+          this.error = 'Failed to generate email.';
           this.loading = false;
         },
       });
   }
 
   async copyEmail(): Promise<void> {
-
     if (!this.generatedEmail) {
       return;
     }
 
-    const text =
-      `Subject: ${this.generatedEmail.subject}\n\n${this.generatedEmail.body}`;
-
-    await navigator.clipboard.writeText(
-      text,
-    );
+    const text = `Subject: ${this.generatedEmail.subject}\n\n${this.generatedEmail.body}`;
+    await navigator.clipboard.writeText(text);
   }
 
-  // Metode za upravljanje editovanjem
   startEditing(): void {
     this.editing = true;
   }

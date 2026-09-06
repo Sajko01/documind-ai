@@ -6,6 +6,7 @@
       <h2>Conversations</h2>
       <button
         type="button"
+        class="new-chat-btn"
         (click)="newConversation()"
       >
         + New
@@ -36,19 +37,23 @@
     </button>
   </aside>
 
-
   <!-- CHAT MAIN AREA -->
   <main class="chat">
     <header class="chat-header">
-      <h1>DocuMind AI</h1>
-      <span *ngIf="selectedConversationId">
-        Conversation
-      </span>
+      <div class="header-title-wrapper">
+        <h1>DocuMind AI</h1>
+        <span *ngIf="selectedConversationId" class="conversation-badge">
+          Active Conversation
+        </span>
+      </div>
       <button
         mat-stroked-button
+        type="button"
+        class="summarize-btn"
+        [disabled]="!selectedConversationId || conversationSummaryLoading"
         (click)="summarizeConversation()"
       >
-        Summarize conversation
+        {{ conversationSummaryLoading ? 'Generating summary...' : 'Summarize conversation' }}
       </button>
     </header>
 
@@ -65,60 +70,34 @@
       *ngIf="conversationSummary"
       class="conversation-summary"
     >
-      <h2>
-        Conversation Summary
-      </h2>
+      <h2>Conversation Summary</h2>
 
-      <p>
+      <p class="summary-text">
         {{ conversationSummary.summary }}
       </p>
 
-      <h3>
-        Key points
-      </h3>
-
+      <h3>Key points</h3>
       <ul>
-        <li
-          *ngFor="
-            let item
-            of conversationSummary.key_points
-          "
-        >
+        <li *ngFor="let item of conversationSummary.key_points">
           {{ item }}
         </li>
       </ul>
 
-      <h3>
-        Decisions
-      </h3>
-
+      <h3>Decisions</h3>
       <ul>
-        <li
-          *ngFor="
-            let item
-            of conversationSummary.decisions
-          "
-        >
+        <li *ngFor="let item of conversationSummary.decisions">
           {{ item }}
         </li>
       </ul>
 
-      <h3>
-        Action items
-      </h3>
-
+      <h3>Action items</h3>
       <ul>
-        <li
-          *ngFor="
-            let item
-            of conversationSummary.action_items
-          "
-        >
+        <li *ngFor="let item of conversationSummary.action_items">
           {{ item }}
         </li>
       </ul>
 
-      <!-- DODATO: PRIKAZ IZVORA ZA SUMU -->
+      <!-- SOURCES ZA SUMU -->
       <div
         *ngIf="conversationSummary.sources && conversationSummary.sources.length > 0"
         class="summary-sources"
@@ -135,9 +114,8 @@
       </div>
     </div>
 
-
     <!-- MESSAGES -->
-    <section class="messages">
+    <section class="messages" #scrollContainer>
 
       <!-- Empty state -->
       <div
@@ -227,14 +205,33 @@
           </button>
         </div>
 
-        <!-- FEEDBACK DUGMAD ZA ASISTENTA -->
+        <!-- 👉 NOVO: Prikaz metrika ispod poruke asistenta (ako su stigle) -->
+        <div 
+          *ngIf="message.role === 'assistant' && message.metrics" 
+          class="ai-metrics-badge text-xs text-gray-400 mt-2 flex gap-3 border-t pt-1"
+        >
+              <span>
+    <mat-icon>schedule</mat-icon>
+    Total:{{ message.metrics.totalTime }}s
+  </span>
+
+  <span>
+    <mat-icon>search</mat-icon>
+   Retrival:{{ message.metrics.retrievalTime }}s
+  </span>
+
+  <span>
+    <mat-icon>memory</mat-icon>
+    LLM:{{ message.metrics.llmTime }}s
+  </span>
+        </div>
+
+        <!-- FEEDBACK DUGMAD -->
         <div
           class="feedback"
           *ngIf="message.role === 'assistant'"
         >
-          <span>
-            Was this answer helpful?
-          </span>
+          <span>Was this answer helpful?</span>
 
           <button
             mat-icon-button
@@ -278,7 +275,6 @@
 
     </section>
 
-
     <!-- INPUT FOOTER -->
     <footer class="chat-input">
       <textarea
@@ -291,6 +287,7 @@
 
       <button
         type="button"
+        class="send-btn"
         (click)="sendMessage()"
         [disabled]="isSendingMessage || !messageText.trim()"
       >
@@ -299,5 +296,4 @@
     </footer>
 
   </main>
-
 </div>

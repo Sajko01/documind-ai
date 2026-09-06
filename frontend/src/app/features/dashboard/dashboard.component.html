@@ -1,25 +1,25 @@
-<div class="dashboard">
-  @if (user$ | async; as user) {
-    <header class="dashboard-header">
-      <div>
-        <h1>Dobrodošli, {{ user.name }}!</h1>
-        <p>Rola: <strong>{{ user.role }}</strong> | Org ID: {{ user.organizationId }}</p>
-      </div>
-      <button (click)="logout()" class="logout-btn">Odjavi se</button>
-    </header>
+<div class="dashboard-layout">
+
+
+  <!-- Glavni desni kontejner -->
+  <div class="main-container">
+    @if (user$ | async; as user) {
+      <header class="dashboard-header">
+        <div class="header-title">
+          <h2>Dobrodošli nazad, {{ user.name }}!</h2>
+          <p>Manage your company knowledge with AI.</p>
+        </div>
+        <div class="user-menu">
+          <span>{{ user.name }} ▼</span>
+          <button (click)="logout()" class="logout-btn">Odjavi se</button>
+        </div>
+      </header>
+    }
 
     <main class="dashboard-content">
-      <!-- Korisnički profil -->
-      <div class="card">
-        <h3>Korisnički profil</h3>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>ID:</strong> {{ user.id }}</p>
-      </div>
-
-      <!-- DocuMind Statistika -->
-      <div class="card">
-        <h3>DocuMind Statistika</h3>
-        
+      
+      <!-- DocuMind Statistika (Grid kartice sa skice) -->
+      <div class="card" style="border: none; padding: 0; background: transparent; box-shadow: none;">
         @if (loading) {
           <div class="loading-text">Učitavanje analitike...</div>
         }
@@ -30,164 +30,132 @@
         @if (metrics) {
           <div class="metrics-grid">
             <div class="metric-card">
-              <span>Korisnici</span>
+              <span>Users</span>
               <div class="metric-value">{{ metrics.totalUsers }}</div>
             </div>
             
             <div class="metric-card">
-              <span>Dokumenti</span>
+              <span>Docs</span>
               <div class="metric-value">{{ metrics.totalDocuments }}</div>
             </div>
             
             <div class="metric-card">
-              <span>Pitanja</span>
+              <span>Questions</span>
               <div class="metric-value">{{ metrics.totalQuestions }}</div>
             </div>
             
             <div class="metric-card">
-              <span>Proizvodi</span>
+              <span>Products</span>
               <div class="metric-value">{{ metrics.totalProducts }}</div>
             </div>
-
-          <div class="metric-card unanswered-card">
-                <span>Neodgovorena pitanja</span>
-                <div class="metric-value">{{ metrics.unansweredQuestions }}</div>
-              </div>
-
-
           </div>
         }
       </div>
 
-      <!-- AI Metrike (Day 87) sa Mat Card strukturama -->
-      <div class="card">
-        <h3>AI Performance Metrike</h3>
 
-        <div *ngIf="aiMetrics" class="metrics-grid">
-          <mat-card class="metric-card">
-            <mat-card-title>Average response time</mat-card-title>
-            <mat-card-content>
-              <div class="metric-value">
+
+      <!-- AI Performance Metrike -->
+      @if (aiMetrics) {
+        <div class="card">
+          <h3>AI Performance Metrike</h3>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span>Average Response Time</span>
+              <div class="metric-value" style="font-size: 1.5rem;">
                 {{ aiMetrics.averageResponseTime | number:'1.0-0' }} ms
               </div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card class="metric-card">
-            <mat-card-title>Average retrieval score</mat-card-title>
-            <mat-card-content>
-              <div class="metric-value">
+            </div>
+            <div class="metric-card">
+              <span>Average Retrieval Score</span>
+              <div class="metric-value" style="font-size: 1.5rem;">
                 {{ aiMetrics.averageRetrievalScore | number:'1.2-3' }}
               </div>
-            </mat-card-content>
-          </mat-card>
+            </div>
+          </div>
+        </div>
+      }
+
+     
+      <!-- AI Answer Feedback -->
+      @if (feedbackStatistics) {
+        <div class="card">
+          <h3>AI Answer Feedback</h3>
+          <div class="feedback-statistics">
+            <div class="feedback-stat">
+              <span class="feedback-label">Positive</span>
+              <strong>{{ feedbackStatistics.positivePercentage }}%</strong>
+            </div>
+            <div class="feedback-stat">
+              <span class="feedback-label">Negative</span>
+              <strong>{{ feedbackStatistics.negativePercentage }}%</strong>
+            </div>
+          </div>
+          <div style="margin-top: 1rem; font-size: 0.85rem; color: #64748b;">
+            Total feedback: {{ feedbackStatistics.total }}
+          </div>
+        </div>
+      }
+
+
+            <!-- Recent Documents -->
+      <div class="card">
+        <h3>Recent documents</h3>
+        <div class="document-row">
+          <span>📄 cenovnik.pdf</span>
+          <span class="badge ready">READY</span>
+        </div>
+        <div class="document-row">
+          <span>📄 FAQ.pdf</span>
+          <span class="badge ready">READY</span>
+        </div>
+        <div class="document-row">
+          <span>📄 katalog.pdf</span>
+          <span class="badge processing">PROCESSING</span>
         </div>
       </div>
 
-
-      <div class="card" *ngIf="unansweredQuestions.length > 0">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Neodgovorena pitanja (Niska pouzdanost)</mat-card-title>
-          </mat-card-header>
-
-          <mat-card-content>
-            <div *ngFor="let item of unansweredQuestions" class="question-row">
-              <span>❓ {{ item.question }}</span>
-              <span class="badge warning">Pouzdanost: {{ item.confidence | percent }}</span>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
-      <!-- Popular Questions (Day 88) -->
-      <div class="card">
-        <mat-card class="popular-questions-card">
-          <mat-card-header>
-            <mat-card-title>Popular Questions</mat-card-title>
-          </mat-card-header>
-
-          <mat-card-content>
-            <div
-              *ngFor="let item of popularQuestions; let i = index"
-              class="question-row"
-            >
-              <span>
-                {{ i + 1 }}. {{ item.question }}
-              </span>
-
-              <strong>
-                {{ item.count }} times
-              </strong>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
       <!-- Popular Documents -->
-      <div class="card">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>
-              Popular Documents
-            </mat-card-title>
-          </mat-card-header>
-
-          <mat-card-content>
-            <div
-              *ngFor="let document of popularDocuments"
-              class="document-row"
-            >
-              <span>
-                📄
-                {{ document.filename }}
-              </span>
-
-              <strong>
-                {{ document.count }}
-                questions
-              </strong>
+      @if (popularDocuments.length > 0) {
+        <div class="card">
+          <h3>Popular Documents (Analytics)</h3>
+          @for (document of popularDocuments; track document.documentId) {
+            <div class="document-row">
+              <span>📄 {{ document.filename }}</span>
+              <strong>{{ document.count }} questions</strong>
             </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
+          }
+        </div>
+      }
 
-      <!-- AI Answer Feedback (Novo) -->
-      <div class="card">
-        <mat-card *ngIf="feedbackStatistics">
-          <mat-card-header>
-            <mat-card-title>
-              AI Answer Feedback
-            </mat-card-title>
-          </mat-card-header>
-
-          <mat-card-content>
-            <div class="feedback-statistics">
-              <div class="feedback-stat">
-                <span class="feedback-label">
-                  Positive
-                </span>
-                <strong>
-                  {{ feedbackStatistics.positivePercentage }}%
-                </strong>
-              </div>
-
-              <div class="feedback-stat">
-                <span class="feedback-label">
-                  Negative
-                </span>
-                <strong>
-                  {{ feedbackStatistics.negativePercentage }}%
-                </strong>
-              </div>
+      
+      <!-- Popular Questions (Ispravljen $index umesto nedefinisane 'i' promenljive) -->
+      @if (popularQuestions.length > 0) {
+        <div class="card">
+          <h3>Popular Questions</h3>
+          @for (item of popularQuestions; track item.question; let idx = $index) {
+            <div class="question-row">
+              <span>{{ idx + 1 }}. {{ item.question }}</span>
+              <strong>{{ item.count }} times</strong>
             </div>
+          }
+        </div>
+      }
 
-            <div class="feedback-total">
-              Total feedback: {{ feedbackStatistics.total }}
+
+       <!-- Neodgovorena pitanja -->
+      @if (unansweredQuestions.length > 0) {
+        <div class="card">
+          <h3>Neodgovorena pitanja (Niska pouzdanost)</h3>
+          @for (item of unansweredQuestions; track item.question) {
+            <div class="question-row">
+              <span>❓ {{ item.question }}</span>
+              <span class="badge processing">Pouzdanost: {{ item.confidence | percent }}</span>
             </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
+          }
+        </div>
+      }
+
+
     </main>
-  }
+  </div>
 </div>

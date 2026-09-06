@@ -15,8 +15,11 @@ import {
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/users/entities/user.entity';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 
+@ApiTags('Analytics')
+@ApiBearerAuth()
 @Controller('analytics')
 @UseGuards(JwtAuthGuard, RolesGuard) // 1. Dodaješ i RolesGuard ovde
 @Roles(UserRole.ADMIN)                     // 2. Zaključavaš ceo kontroler samo za ADMIN-e

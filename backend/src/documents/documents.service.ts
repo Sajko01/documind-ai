@@ -398,49 +398,6 @@ export class DocumentsService {
     });
   }
 
-  // // 5. Brisanje dokumenta (provera prava + čišćenje sa diska)
-  // async delete(
-  //   documentId: string,
-  //   userOrganizationId: string,
-  // ): Promise<{ success: boolean; message: string }> {
-  //   const document = await this.documentsRepository.findOne({
-  //     where: { id: documentId },
-  //   });
-
-  //   if (!document) {
-  //     throw new NotFoundException({
-  //       success: false,
-  //       error: {
-  //         code: 'DOCUMENT_NOT_FOUND',
-  //         message: 'Document does not exist',
-  //       },
-  //     });
-  //   }
-
-  //   // 🔒 Security Guard: Ako dokument pripada drugoj organizaciji
-  //   if (document.organizationId !== userOrganizationId) {
-  //     throw new ForbiddenException({
-  //       success: false,
-  //       error: {
-  //         code: 'FORBIDDEN_RESOURCE',
-  //         message: 'You do not have access to this document',
-  //       },
-  //     });
-  //   }
-
-  //   // Fizičko brisanje fajla sa diska ako postoji
-  //   if (document.storagePath) {
-  //     const physicalPath = join(process.cwd(), document.storagePath);
-  //     this.deleteFileIfExists(physicalPath);
-  //   }
-
-  //   await this.documentsRepository.remove(document);
-
-  //   return {
-  //     success: true,
-  //     message: 'Document successfully deleted',
-  //   };
-  // }
 
   // Helper metoda za brisanje sa diska
   private deleteFileIfExists(filePath: string): void {

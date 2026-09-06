@@ -1,3 +1,19 @@
+# fastapi
+# uvicorn[standard]
+# pydantic
+# python-multipart
+# PyMuPDF
+# tiktoken
+# python-dotenv
+# sentence-transformers
+# groq
+# sentence-transformers
+# torch
+
+# # psycopg2-binary
+# # sqlalchemy
+# # pgvector
+
 fastapi
 uvicorn[standard]
 pydantic
@@ -7,5 +23,6 @@ tiktoken
 python-dotenv
 sentence-transformers
 groq
-sentence-transformers
-torch
+sqlalchemy
+psycopg2-binary
+pgvector

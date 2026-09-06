@@ -23,22 +23,15 @@ import {
 @Component({
   selector: 'app-offers',
   standalone: true,
-
   imports: [
     CommonModule,
     MatButtonModule,
     MatTableModule,
   ],
-
-  templateUrl:
-    './offers.component.html',
-
-  styleUrl:
-    './offers.component.scss',
+  templateUrl: './offers.component.html',
+  styleUrl: './offers.component.scss',
 })
-export class OffersComponent
-  implements OnInit {
-
+export class OffersComponent implements OnInit {
   offers: Offer[] = [];
 
   displayedColumns = [
@@ -52,8 +45,7 @@ export class OffersComponent
   loading = false;
 
   constructor(
-    private readonly offersService:
-      OffersService,
+    private readonly offersService: OffersService,
   ) {}
 
   ngOnInit(): void {
@@ -61,26 +53,17 @@ export class OffersComponent
   }
 
   loadOffers(): void {
-
     this.loading = true;
 
     this.offersService
       .getOffers()
       .subscribe({
-        next: offers => {
-
+        next: (offers) => {
           this.offers = offers;
-
           this.loading = false;
         },
-
-        error: error => {
-
-          console.error(
-            'Failed to load offers',
-            error,
-          );
-
+        error: (error) => {
+          console.error('Failed to load offers', error);
           this.loading = false;
         },
       });
