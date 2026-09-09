@@ -85,6 +85,7 @@ import { FeedbackModule } from './feedback/feedback.module';
 import { Feedback } from './feedback/entities/feedback.entity';
 import { UnansweredQuestionsModule } from './unanswered-questions/unanswered-questions.module';
 import { UnansweredQuestion } from './unanswered-questions/entities/unanswered-question.entity';
+//import { InstagramModule } from './instagram/instagram.module';
 
 
 @Module({
@@ -137,6 +138,7 @@ import { UnansweredQuestion } from './unanswered-questions/entities/unanswered-q
     SummarizationModule,
     FeedbackModule,
      UnansweredQuestionsModule,
+    // InstagramModule,
   ],
 })
 export class AppModule {}
