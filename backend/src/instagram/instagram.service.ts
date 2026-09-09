@@ -67,7 +67,7 @@
 // ) {
 //   // const accessToken = process.env.INSTAGRAM_PAGE_ACCESS_TOKEN;
 
-// const accessToken="IGAAXdEZADC8AdBZAFowTUZAvTXJqdDZA5NDVOMF9STWdIdnZAaQ2ZAPMFJQNlVtdzN3QWV4blRPdVJ4MERkWjNKUEtsUTdNeFNtajJUT29aeWk5OU5iU0NRdzVRREVrS2pOSktieGtOMGUwV25fU0NIZA0w5M2VmWGk1ZATk0TENPbVJfVQZDZD"
+// const accessToken=""
 
 //     if (!accessToken) {
 //     throw new Error(
